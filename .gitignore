@@ -6,6 +6,8 @@
 *.user
 *.userosscache
 *.sln.docstates
+*.pyproj
+*.sln
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
