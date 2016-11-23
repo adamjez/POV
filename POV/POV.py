@@ -10,8 +10,14 @@ Second = (1480, 800)
 LinePositions = [140, 300, 470, 650, 800, 970, 1150, 1320]
 LinesWidth = 150
 
-LeftSideColor = (255, 0 ,0)
-RightSideColor = (0, 255, 0)
+LinesBelongs = [1, 1, 2, 1, 2, 1, 2, 2]
+
+PlayersCount = [1, 2, 3, 5, 5, 3, 2, 1]
+
+Player1Color = (134, 240 ,180)
+Player2Color = (0, 240, 180)
+
+Tolerance = 40
 
 def visualParameters(image):
     cv2.rectangle(image, First, Second, (255, 0, 0))
@@ -69,7 +75,8 @@ def loadImage():
 
     frame = cv2.imread(sys.argv[1])
     preproc = core.preprocessor(First, Second)
-    proc = core.processor(LinePositions, LinesWidth)
+    proc = core.processor(LinePositions, LinesWidth, Player1Color, Player2Color, Tolerance,
+                          LinesBelongs, PlayersCount)
 
     playground = preproc.run(frame)
 
@@ -78,7 +85,8 @@ def loadImage():
     cv2.imshow("frameWindow", frame)
     #cv2.waitKey(int(1/fps*1000)) # time to wait between frames, in mSec
     cv2.waitKey()
-    cv2.imshow("frameWindow", playground)
-    cv2.waitKey()
+    
+    #cv2.imshow("frameWindow", playground)
+    #cv2.waitKey()
 
 loadImage()
