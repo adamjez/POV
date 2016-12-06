@@ -47,8 +47,8 @@ class processor:
         
         rows = gaussian_filter(rows, sigma=10)
 
-        #plt.plot(range(0, 770), rows)
-        #plt.show()
+        plt.plot(range(0, 770), rows)
+        plt.show()
 
         for index in range(playersCount):
             index = rows.argmin(axis=0)
