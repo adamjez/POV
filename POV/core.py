@@ -6,9 +6,12 @@ import random
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import gaussian_filter
 
+import models
+import game
+
 class processor:
 
-    def __init__(self, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount):
+    def __init__(self, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount, distanceBetweenDummys):
         self.linesPosition = linesPosition
         self.linesWidth = linesWidth
         self.player1Color = player1Color
@@ -16,13 +19,18 @@ class processor:
         self.tolerance = tolerance
         self.lineBelongs = lineBelongs
         self.playersCount = playersCount
-        self.time = 0.0
+        self.distanceBetweenDummys = distanceBetweenDummys
 
     def run(self, image):
         height, width, channels = image.shape
-        self.processLines(image, height)
+        players = self.processLines(image, height)
+        ball = self.processBall(image)
 
+        return game.gameFrame(ball, players)
 
+    def processBall(self, image):
+        return models.Ball((0,0), 0, 0)
+     
     def processLines(self, image, height):
         linesSegment = []
 
@@ -30,34 +38,62 @@ class processor:
             sourceSegment = image[0:height, linePos - int(self.linesWidth/2):linePos + int(self.linesWidth/2)].copy()
             linesSegment.append(sourceSegment)
 
-            lineSegment = self.segmentLines(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
+            lineSegment = self.segmentLinesFirstVersion(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
 
             cv2.imshow("LineSegment", lineSegment)
             cv2.waitKey()
 
-            lineSegment2 = self.segmentLines2(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
+            #lineSegment2 = self.segmentLinesSecondVersion(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
 
-            cv2.imshow("LineSegment", lineSegment2)
-            cv2.waitKey()
+            #cv2.imshow("LineSegment", lineSegment2)
+            #cv2.waitKey()
 
-    def segmentLines(self, image, color, playersCount):
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV);
+        return [models.Dummy((0,0), 0, 0), models.Dummy((0,0), 0, 0)]
 
-        rows, min, index = self.compueMeanSquareForEachRow(image, color)
+    def segmentLinesFirstVersion(self, image, color, playersCount):
+        rows = self.compueMeanSquareForEachRow(cv2.cvtColor(image, cv2.COLOR_RGB2HSV), color)
         
-        rows = gaussian_filter(rows, sigma=10)
+        rows = gaussian_filter(rows, sigma=6)
 
-        plt.plot(range(0, 770), rows)
+        frameHeight = len(rows)
+        plt.plot(range(0, frameHeight), rows)
         plt.show()
 
         for index in range(playersCount):
             index = rows.argmin(axis=0)
-            rows[index - 50:index + 50] = sys.maxsize
-            cv2.circle(image, (50, index), 5, (255, 0, 0), 10)
+            rows[self.normalizeToFrameHeight(index - self.distanceBetweenDummys, frameHeight):
+                 self.normalizeToFrameHeight(index + self.distanceBetweenDummys, frameHeight)] = sys.maxsize
+            cv2.circle(image, (int(self.linesWidth/2), index), 5, (255, 0, 0), 10)
         
         return image
 
-    def segmentLines2(self, image, color, playersCount):
+    def normalizeToFrameHeight(self, index, frameHeight):
+        if index < 0:
+            return 0
+        if index >= frameHeight:
+            return frameHeight
+        return index
+
+    def compueMeanSquareForEachRow(self, image, color):
+        height, width, channels = image.shape
+
+        rows = []
+        for i in range(height):
+            rowSum = 0
+            for j in range(width):
+                distance = abs(image[i, j] - color)
+                value = (distance[0] + distance[1]) ** 2
+                rowSum += value
+
+            rowSum = rowSum / width
+            rowSum = rowSum ** (1/2.0)
+
+            rows.append(int(rowSum))
+
+        return rows
+
+
+    def segmentLinesSecondVersion(self, image, color, playersCount):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV);
 
         lower = np.array([c - self.tolerance for c in color])
@@ -74,28 +110,6 @@ class processor:
 
         return lineSegment
 
-    def compueMeanSquareForEachRow(self, image, color):
-        height, width, channels = image.shape
-
-        rows = []
-        min = sys.maxsize;
-        index = -1
-        for i in range(height):
-            rowSum = 0
-            for j in range(width):
-                test = abs(image[i, j] - color)
-                value = (test[0] + test[1]) ** 2
-                rowSum += value
-
-            rowSum = rowSum / width
-            rowSum = rowSum ** (1/2.0)
-            if rowSum < min:
-                min = rowSum
-                index = i
-            rows.append(int(rowSum))
-
-        return (rows, min, index)
-        
 
 class preprocessor:
     
