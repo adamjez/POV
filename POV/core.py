@@ -5,13 +5,15 @@ import math
 import random
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import gaussian_filter
+from process_ball import ProcessBall
 
 import models
 import game
 
-class processor:
 
-    def __init__(self, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount, distanceBetweenDummys):
+class processor:
+    def __init__(self, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount,
+                 distanceBetweenDummys):
         self.linesPosition = linesPosition
         self.linesWidth = linesWidth
         self.player1Color = player1Color
@@ -20,17 +22,15 @@ class processor:
         self.lineBelongs = lineBelongs
         self.playersCount = playersCount
         self.distanceBetweenDummys = distanceBetweenDummys
+        self.process_ball = ProcessBall()
 
     def run(self, image):
         height, width, channels = image.shape
-        players = self.processLines(image, height)
-        ball = self.processBall(image)
+        # players = self.processLines(image, height)
+        players = []
+        ball = self.process_ball.detect(image)
+        return game.GameFrame(ball, players)
 
-        return game.gameFrame(ball, players)
-
-    def processBall(self, image):
-        return models.Ball((0,0), 0, 0)
-     
     def processLines(self, image, height):
         dummys = []
         lineIndex = 0
@@ -95,12 +95,11 @@ class processor:
                 rowSum += value
 
             rowSum = rowSum / width
-            rowSum = rowSum ** (1/2.0)
+            rowSum = rowSum ** (1 / 2.0)
 
             rows.append(int(rowSum))
 
         return rows
-
 
     def segmentLinesSecondVersion(self, image, color, playersCount):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV);
@@ -114,14 +113,13 @@ class processor:
         lineSegment = cv2.inRange(image, lower, upper)
 
         moments = cv2.moments(lineSegment)
-        center = (int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00']))
+        center = (int(moments['m10'] / moments['m00']), int(moments['m01'] / moments['m00']))
         cv2.circle(lineSegment, center, 3, self.player1Color, -1)
 
         return lineSegment
 
 
 class preprocessor:
-    
     def __init__(self, point1, point2):
         self.point1 = point1
         self.point2 = point2
