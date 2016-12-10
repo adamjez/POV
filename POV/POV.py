@@ -14,20 +14,21 @@ import game
 ####################
 # Field Parameters #
 ####################
-LeftTopCorner = (75, 14)        # Specifies corner for playground rectangle
+LeftTopCorner = (75, 14)  # Specifies corner for playground rectangle
 RightBottomCorner = (770, 510)  # Specifies corner for playground rectangle
 
-LinePositions = [100, 270, 430, 600] # Specifies lines distance in pixels from left 
-LinesWidth = 40 # Width of line in pixels for line segmentations
+LinePositions = [100, 270, 430, 600]  # Specifies lines distance in pixels from left
+LinesWidth = 40  # Width of line in pixels for line segmentations
 
-LinesBelongs = [1, 2, 1, 2] # Specifies who owns players on given line indexed from left to right
-PlayersCount = [3, 3, 3, 3] # Specifies players count on each line indexed from left to right
+LinesBelongs = [1, 2, 1, 2]  # Specifies who owns players on given line indexed from left to right
+PlayersCount = [3, 3, 3, 3]  # Specifies players count on each line indexed from left to right
 
-Player1Color = (180, 242 ,140)  # Color of player 1 dummys in HSV
-Player2Color = (221, 211, 27)   # Color of player 2 dummys in HSV
+Player1Color = (180, 242, 140)  # Color of player 1 dummys in HSV
+Player2Color = (221, 211, 27)  # Color of player 2 dummys in HSV
 
-DistanceBetweenDummys = 100 # Specifies distance between dummys on lines
-ColorTolerance = 40 # Tolerance for segmentation by color
+DistanceBetweenDummys = 100  # Specifies distance between dummys on lines
+ColorTolerance = 40  # Tolerance for segmentation by color
+
 
 def visualParameters(image):
     cv2.rectangle(image, LeftTopCorner, RightBottomCorner, (255, 0, 0))
@@ -54,27 +55,58 @@ def processVideo(videoPath):
 
     fps = vidFile.get(cv2.CAP_PROP_FPS)
     nFrames = int(vidFile.get(cv2.CAP_PROP_FRAME_COUNT))
-    print("frame number: %s" %nFrames)
-    print("FPS value: %s" %fps)
-    currentGame = game.game(fps, nFrames)
+    print("frame number: %s" % nFrames)
+    print("FPS value: %s" % fps)
+    print("size: %d x %d" % (vidFile.get(cv2.CAP_PROP_FRAME_WIDTH), vidFile.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+    currentGame = game.Game(fps, nFrames)
 
-    ret, frame = vidFile.read() # read first frame, and the return code of the function.
+    ret, frame = vidFile.read()  # read first frame, and the return code of the function.
     while ret:  # note that we don't have to use frame number here, we could read from a live written file.
-        currentTime = int(1/fps*1000); # in mSec
+        currentTime = int(1 / fps * 1000)  # in mSec
 
-        #visualParameters(frame)
-        #cv2.imshow("frameWindow", frame)
-        #cv2.waitKey()
+        # visualParameters(frame)
+        # cv2.imshow("frameWindow", frame)
+        # cv2.waitKey()
 
         playground = preproc.run(frame)
         gameFrame = proc.run(playground)
         currentGame.processFrame(gameFrame)
 
-        ret, frame = vidFile.read() 
+        if space_hit():
+            print("(+) Video paused")
+            while True:
+                if space_hit():
+                    print("(>) Video unpaused")
+                    break
+
+        if break_loop():
+            break
+
+        ret, frame = vidFile.read()
+
+    vidFile.release()
+    cv2.destroyAllWindows()
+
+
+def space_hit():
+    ch = 0xFF & cv2.waitKey(1)
+    if ch == 32:  # escape
+        return True
+
+    return False
+
+
+def break_loop():
+    ch = 0xFF & cv2.waitKey(1)
+    if ch == 27:  # escape
+        return True
+    elif ch == ord('q'):
+        return True
+    return False
+
 
 def processImage(imagePath):
     frame = cv2.imread(imagePath)
-
 
     preproc = core.preprocessor(LeftTopCorner, RightBottomCorner)
     proc = core.processor(LinePositions, LinesWidth, Player1Color, Player2Color, ColorTolerance,
@@ -85,23 +117,25 @@ def processImage(imagePath):
 
     visualParameters(frame)
     cv2.imshow("frameWindow", frame)
-    #cv2.waitKey(int(1/fps*1000)) # time to wait between frames, in mSec
+    # cv2.waitKey(int(1/fps*1000)) # time to wait between frames, in mSec
     cv2.waitKey()
+
 
 ################
 # MAIN PROGRAM #
 ################
 
-if len(sys.argv) < 3:
-    print("Incorrect number of parameters given")
-    sys.exit(1)
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("Incorrect number of parameters given")
+        sys.exit(1)
 
-inputType = sys.argv[1]
+    inputType = sys.argv[1]
 
-if inputType == "-i":
-    processImage(sys.argv[2])
-elif inputType == "-v":
-    processVideo(sys.argv[2])
-else:
-    print("Unkown parameter given")
-    sys.exit(1)
+    if inputType == "-i":
+        processImage(sys.argv[2])
+    elif inputType == "-v":
+        processVideo(sys.argv[2])
+    else:
+        print("Unkown parameter given")
+        sys.exit(1)
