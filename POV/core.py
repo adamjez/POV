@@ -49,12 +49,12 @@ class processor:
 
     def segmentLinesFirstVersion(self, image, color, playersCount):
         rows = self.compueMeanSquareForEachRow(cv2.cvtColor(image, cv2.COLOR_RGB2HSV), color)
-        
+
         rows = gaussian_filter(rows, sigma=9, mode='nearest')
 
         frameHeight = len(rows)
-        plt.plot(range(0, frameHeight), rows)
-        plt.show()
+        # plt.plot(range(0, frameHeight), rows)
+        # plt.show()
 
         rowIndexes = []
         for playerIndex in range(playersCount):
@@ -69,10 +69,10 @@ class processor:
             rows[self.normalizeToFrameHeight(index - self.distanceBetweenDummys, frameHeight):
                  self.normalizeToFrameHeight(index + self.distanceBetweenDummys, frameHeight)] = sys.maxsize
             cv2.circle(image, (int(self.linesWidth/2), index), 5, (255, 0, 0), 10)
-        
+
 
         cv2.imshow("LineSegment", image)
-        cv2.waitKey()
+        # cv2.waitKey()
 
         return rowIndexes
 
