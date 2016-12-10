@@ -32,40 +32,49 @@ class processor:
         return models.Ball((0,0), 0, 0)
      
     def processLines(self, image, height):
-        linesSegment = []
-
+        dummys = []
+        lineIndex = 0
         for linePos, belongs, playersCount in zip(self.linesPosition, self.lineBelongs, self.playersCount):
             sourceSegment = image[0:height, linePos - int(self.linesWidth/2):linePos + int(self.linesWidth/2)].copy()
-            linesSegment.append(sourceSegment)
 
-            lineSegment = self.segmentLinesFirstVersion(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
+            dummyIndexes = self.segmentLinesFirstVersion(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
 
-            cv2.imshow("LineSegment", lineSegment)
-            cv2.waitKey()
-
+            for rowIndex in dummyIndexes:
+                dummys.append(models.Dummy((linePos, dummyIndexes), belongs, lineIndex))
             #lineSegment2 = self.segmentLinesSecondVersion(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
 
-            #cv2.imshow("LineSegment", lineSegment2)
-            #cv2.waitKey()
+            lineIndex += 1
 
-        return [models.Dummy((0,0), 0, 0), models.Dummy((0,0), 0, 0)]
+        return dummys
 
     def segmentLinesFirstVersion(self, image, color, playersCount):
         rows = self.compueMeanSquareForEachRow(cv2.cvtColor(image, cv2.COLOR_RGB2HSV), color)
         
-        rows = gaussian_filter(rows, sigma=6)
+        rows = gaussian_filter(rows, sigma=9, mode='nearest')
 
         frameHeight = len(rows)
         plt.plot(range(0, frameHeight), rows)
         plt.show()
 
-        for index in range(playersCount):
-            index = rows.argmin(axis=0)
+        rowIndexes = []
+        for playerIndex in range(playersCount):
+            # if we got atleast 2 players and they are on the sides we can get middle one
+            # If distance between these 2 players is greater then distance between dummys and magic constant so we can find middle one
+            if len(rowIndexes) == 2 and abs(rowIndexes[0] - rowIndexes[1]) > (self.distanceBetweenDummys * 1.6):
+                index = int((rowIndexes[0] + rowIndexes[1]) / 2)
+            else:
+                index = rows.argmin(axis=0)
+
+            rowIndexes.append(index)
             rows[self.normalizeToFrameHeight(index - self.distanceBetweenDummys, frameHeight):
                  self.normalizeToFrameHeight(index + self.distanceBetweenDummys, frameHeight)] = sys.maxsize
             cv2.circle(image, (int(self.linesWidth/2), index), 5, (255, 0, 0), 10)
         
-        return image
+
+        cv2.imshow("LineSegment", image)
+        cv2.waitKey()
+
+        return rowIndexes
 
     def normalizeToFrameHeight(self, index, frameHeight):
         if index < 0:

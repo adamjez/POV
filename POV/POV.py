@@ -15,15 +15,15 @@ import game
 # Field Parameters #
 ####################
 LeftTopCorner = (75, 14)        # Specifies corner for playground rectangle
-RightBottomCorner = (770, 510) # Specifies corner for playground rectangle
+RightBottomCorner = (770, 510)  # Specifies corner for playground rectangle
 
 LinePositions = [100, 270, 430, 600] # Specifies lines distance in pixels from left 
 LinesWidth = 40 # Width of line in pixels for line segmentations
 
 LinesBelongs = [1, 2, 1, 2] # Specifies who owns players on given line indexed from left to right
-PlayersCount = [2, 3, 3, 2] # Specifies players count on each line indexed from left to right
+PlayersCount = [3, 3, 3, 3] # Specifies players count on each line indexed from left to right
 
-Player1Color = (180, 242 ,140) # Color of player 1 dummys in HSV
+Player1Color = (180, 242 ,140)  # Color of player 1 dummys in HSV
 Player2Color = (221, 211, 27)   # Color of player 2 dummys in HSV
 
 DistanceBetweenDummys = 100 # Specifies distance between dummys on lines
@@ -51,7 +51,6 @@ def processVideo(videoPath):
     preproc = core.preprocessor(LeftTopCorner, RightBottomCorner)
     proc = core.processor(LinePositions, LinesWidth, Player1Color, Player2Color, ColorTolerance,
                           LinesBelongs, PlayersCount, DistanceBetweenDummys)
-
 
     fps = vidFile.get(cv2.CAP_PROP_FPS)
     nFrames = int(vidFile.get(cv2.CAP_PROP_FRAME_COUNT))
