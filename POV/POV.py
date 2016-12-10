@@ -72,12 +72,10 @@ def processVideo(videoPath):
         gameFrame = proc.run(playground)
         currentGame.processFrame(gameFrame)
 
-        if space_hit():
+        if space_hit(1):
             print("(+) Video paused")
-            while True:
-                if space_hit():
-                    print("(>) Video unpaused")
-                    break
+            space_hit()
+            print("(>) Video unpaused")
 
         if break_loop():
             break
@@ -88,8 +86,11 @@ def processVideo(videoPath):
     cv2.destroyAllWindows()
 
 
-def space_hit():
-    ch = 0xFF & cv2.waitKey(1)
+def space_hit(delay=None):
+    if delay is None:
+        ch = 0xFF & cv2.waitKey()
+    else:
+        ch = 0xFF & cv2.waitKey(delay)
     if ch == 32:  # escape
         return True
 

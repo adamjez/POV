@@ -24,6 +24,8 @@ class processor:
         self.distanceBetweenDummys = distanceBetweenDummys
         self.process_ball = ProcessBall()
 
+
+
     def run(self, image):
         height, width, channels = image.shape
         # players = self.processLines(image, height)
