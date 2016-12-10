@@ -60,7 +60,7 @@ class processor:
         for playerIndex in range(playersCount):
             # if we got atleast 2 players and they are on the sides we can get middle one
             # If distance between these 2 players is greater then distance between dummys and magic constant so we can find middle one
-            if len(rowIndexes) == 2 and abs(rowIndexes[0] - rowIndexes[1]) > (self.distanceBetweenDummys * 1.6):
+            if playersCount == 3 and len(rowIndexes) == 2 and abs(rowIndexes[0] - rowIndexes[1]) > (self.distanceBetweenDummys * 1.6):
                 index = int((rowIndexes[0] + rowIndexes[1]) / 2)
             else:
                 index = rows.argmin(axis=0)
