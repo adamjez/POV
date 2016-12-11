@@ -26,7 +26,8 @@ PlayersCount = [3, 3, 3, 3]  # Specifies players count on each line indexed from
 Player1Color = (180, 242, 140)  # Color of player 1 dummys in HSV
 Player2Color = (221, 211, 27)  # Color of player 2 dummys in HSV
 
-DistanceBetweenDummys = 100  # Specifies distance between dummys on lines
+DistanceBetweenDummys = 145  # Specifies distance between dummys on lines
+DummyHeight = 46
 ColorTolerance = 40  # Tolerance for segmentation by color
 
 
@@ -51,7 +52,7 @@ def processVideo(videoPath):
 
     preproc = core.preprocessor(LeftTopCorner, RightBottomCorner)
     proc = core.processor(LinePositions, LinesWidth, Player1Color, Player2Color, ColorTolerance,
-                          LinesBelongs, PlayersCount, DistanceBetweenDummys)
+                          LinesBelongs, PlayersCount, DistanceBetweenDummys, DummyHeight)
 
     fps = vidFile.get(cv2.CAP_PROP_FPS)
     nFrames = int(vidFile.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -60,14 +61,19 @@ def processVideo(videoPath):
     print("size: %d x %d" % (vidFile.get(cv2.CAP_PROP_FRAME_WIDTH), vidFile.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     currentGame = game.Game(fps, nFrames)
 
-    ret, frame = vidFile.read()  # read first frame, and the return code of the function.
+    currentTime = 0
+    for i in range(290):
+        ret, frame = vidFile.read()  # read first frame, and the return code of the function.
+        currentTime += int(1 / fps * 1000)
+    
     while ret:  # note that we don't have to use frame number here, we could read from a live written file.
-        currentTime = int(1 / fps * 1000)  # in mSec
-
         # visualParameters(frame)
         # cv2.imshow("frameWindow", frame)
         # cv2.waitKey()
+        print("Current Time: " + str(currentTime))
 
+        #cv2.imshow("test", frame)
+        #cv2.waitKey()
         playground = preproc.run(frame)
         gameFrame = proc.run(playground)
         currentGame.processFrame(gameFrame)
@@ -83,6 +89,7 @@ def processVideo(videoPath):
             break
 
         ret, frame = vidFile.read()
+        currentTime += int(1 / fps * 1000)  # in mSec
 
     vidFile.release()
     cv2.destroyAllWindows()
