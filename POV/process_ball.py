@@ -3,7 +3,7 @@ import numpy as np
 import models
 from drawer import Drawer
 
-DEBUG = True
+DEBUG = False
 
 
 class ProcessBall:
