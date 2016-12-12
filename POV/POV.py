@@ -32,8 +32,8 @@ ColorTolerance = 40  # Tolerance for segmentation by color
 
 GoalGates = [
     [
-        (96, 210),
-        (96, 340)
+        (86, 211),
+        (97, 341)
     ],
 
     [
@@ -51,7 +51,7 @@ def visualParameters(image):
         cv2.line(image, (LeftTopCorner[0] + point, 0), (LeftTopCorner[0] + point, height), (0, 0, 255))
 
     for gate in GoalGates:
-        cv2.line(image, gate[0], gate[1], (0, 0, 255), 2)
+        cv2.rectangle(image, gate[0], gate[1], (0, 0, 255), 1)
 
 
 def reset_to_start(vidFile, frame_counter, frames_count):
@@ -88,11 +88,10 @@ def processVideo(videoPath, is_looping):
 
     frame_counter = 0
     currentTime = 0
-    for i in range(314): #
+    while vidFile.isOpened():  # note that we don't have to use frame number here, we could read from a live written file.
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
-        currentTime += int(1 / fps * 1000)
-    
-    while ret:  # note that we don't have to use frame number here, we could read from a live written file.
+        if ret is False: break
+        
         if is_looping and reset_to_start(vidFile, frame_counter, nFrames):
             frame_counter = 0
 
@@ -101,21 +100,18 @@ def processVideo(videoPath, is_looping):
         # cv2.waitKey()
         print("Current Time: " + str(currentTime))
 
-        #cv2.imshow("test", frame)
-        #cv2.waitKey()
         playground = preproc.run(frame)
         gameFrame = proc.run(playground)
         currentGame.processFrame(gameFrame)
 
         if space_hit(1):
-            print("(+) Video paused")
+            print("(x) Video paused")
             space_hit()
             print("(>) Video unpaused")
 
         if break_loop():
             break
 
-        ret, frame = vidFile.read()
         currentTime += int(1 / fps * 1000)  # in mSec
         frame_counter += 1
 
