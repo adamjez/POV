@@ -15,7 +15,8 @@ class processor:
     def run(self, image):
         players = self.detect_players.detect(image)
         ball = self.detect_ball.detect(image)
-        return game.GameFrame(ball, players, image)
+        goal = self.detect_goal.detect(image, ball)
+        return game.GameFrame(ball, players, image, goal)
 
 
 class preprocessor:

@@ -1,5 +1,6 @@
 import cv2
 from abc import ABC, abstractmethod
+import numpy as np
 
 
 class BaseModel(ABC):
@@ -22,6 +23,9 @@ class BaseModel(ABC):
         if self.position == self.INVALID_POSITION: return
         self.render_model(image)
 
+    def is_visible(self):
+        return self.position != self.INVALID_POSITION
+
 
 class Ball(BaseModel):
     BALL_KNOWN_RADIUS = 22
@@ -32,9 +36,10 @@ class Ball(BaseModel):
         cv2.circle(image, self.position, self.radius, (0, 200, 0), 1)
         cv2.circle(image, self.position, self.BALL_KNOWN_RADIUS, (0, 255, 0), 2)
 
-    def __init__(self, position, radius):
+    def __init__(self, position, radius, contour):
         super().__init__(position)
         self.radius = radius
+        self.contour = contour
 
 
 class Dummy(BaseModel):

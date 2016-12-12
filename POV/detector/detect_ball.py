@@ -3,11 +3,10 @@ import numpy as np
 import models
 from drawer import Drawer
 
-DEBUG = True
+DEBUG = False
 
 
 class DetectBall:
-    BALL_TEMPLATE_SIZE = 20
     MIN_CONTOUR_SIZE = 10
     MIN_CONTOUR_RADIUS = 9
 
@@ -23,8 +22,9 @@ class DetectBall:
             self.ball_up_corr -= np.ones([3], dtype=np.int_)
 
     def create_template(self):
-        template = np.zeros([2 * self.BALL_TEMPLATE_SIZE, 2 * self.BALL_TEMPLATE_SIZE], np.uint8)
-        cv2.circle(template, (self.BALL_TEMPLATE_SIZE, self.BALL_TEMPLATE_SIZE), self.BALL_TEMPLATE_SIZE,
+        size = models.Ball.BALL_KNOWN_RADIUS
+        template = np.zeros([2 * size, 2 * size], np.uint8)
+        cv2.circle(template, (size, size), size,
                    (255, 255, 255), -1)
         im2, circle_contours, hierarchy = cv2.findContours(template, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         return circle_contours[0]
@@ -76,11 +76,12 @@ class DetectBall:
         if DEBUG:
             mask_visual.draw_text(str(self.ball_low_corr) + "|" + str(self.ball_up_corr))
 
-        best_circle = self._get_best_circle(mask, mask_visual)
+        best_circle, best_contour = self._get_best_circle(mask, mask_visual)
 
-        ball = models.Ball(models.BaseModel.INVALID_POSITION, 0)
         if best_circle is not None:
-            ball = models.Ball(best_circle[0], best_circle[1])
+            ball = models.Ball(best_circle[0], best_circle[1], best_contour)
+        else:
+            ball = models.Ball(models.BaseModel.INVALID_POSITION, 0, None)
 
         if DEBUG:
             mask_visual \
@@ -92,6 +93,7 @@ class DetectBall:
     def _get_best_circle(self, mask, mask_visual):
         min_match_error = np.inf
         best_ball = None
+        best_contour = None
 
         im2, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         for cnt in contours:
@@ -100,6 +102,8 @@ class DetectBall:
 
             if cnt.size < self.MIN_CONTOUR_SIZE:
                 continue
+
+            # TODO better filtering (based on this? http://layer0.authentise.com/detecting-circular-shapes-using-contours.html )
 
             if DEBUG:
                 mask_visual.draw_contour(cnt, (255, 0, 0))
@@ -119,7 +123,9 @@ class DetectBall:
                 if ret < min_match_error:
                     min_match_error = ret
                     best_ball = (center, radius)
+                    best_contour = cnt
             else:
                 best_ball = (center, radius)
+                best_contour = cnt
 
-        return best_ball
+        return best_ball, best_contour

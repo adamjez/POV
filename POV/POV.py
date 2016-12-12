@@ -37,20 +37,19 @@ options = {
     "GoalGates": [
         [(86, 211), (97, 341)],
         [(755, 208), (765, 340)]
-    ]
+    ],
 }
 
 
-def visualParameters(image):
-    cv2.rectangle(image, LeftTopCorner, RightBottomCorner, (255, 0, 0))
+def visualParameters(playground):
+    cv2.rectangle(playground, LeftTopCorner, RightBottomCorner, (255, 0, 0))
 
-    height, width, channels = image.shape
+    height, width, channels = playground.shape
     for point in LinePositions:
-        cv2.line(image, (LeftTopCorner[0] + point, 0), (LeftTopCorner[0] + point, height), (0, 0, 255))
+        cv2.line(playground, (LeftTopCorner[0] + point, 0), (LeftTopCorner[0] + point, height), (0, 0, 255))
 
     for gate in options["GoalGates"]:
-        cv2.rectangle(image, gate[0], gate[1], (0, 0, 255), 1)
-
+        cv2.rectangle(playground, gate[0], gate[1], (0, 0, 255), 1)
 
 
 def reset_to_start(vidFile, frame_counter, frames_count):
@@ -93,10 +92,8 @@ def processVideo(videoPath, is_looping):
         if is_looping and reset_to_start(vidFile, frame_counter, nFrames):
             frame_counter = 0
 
-        visualParameters(frame)
-        # cv2.imshow("frameWindow", frame)
-        # cv2.waitKey()
-        print("Current Time: " + str(currentTime))
+        # visualParameters(frame)
+		print("Current Time: " + str(currentTime))
 
         playground = preproc.run(frame)
         gameFrame = proc.run(playground)
