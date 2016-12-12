@@ -1,3 +1,6 @@
+from drawer import Drawer
+
+
 class Game(object):
     """Simulates the game and evaluates it"""
 
@@ -14,6 +17,16 @@ class Game(object):
 class GameFrame(object):
     """Simulates the game and evaluates it"""
 
-    def __init__(self, ball, players):
+    def __init__(self, ball, players, image):
         self.ball = ball
         self.players = players
+        self.image = image
+
+        drawer = Drawer(image)
+
+        drawer.draw_model(ball)
+
+        for player in players:
+            drawer.draw_model(player)
+
+        drawer.show()
