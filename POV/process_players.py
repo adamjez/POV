@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 
 import models
 
+# Bigger value more feet detection with more false alarams
+FEET_DETECTION_TOLERANCE = 3500
 
 class ProcessPlayers:
     def __init__(self, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount,
@@ -36,6 +38,7 @@ class ProcessPlayers:
                                              currentPlayerColor, 
                                              playersCount,
                                              True if lineIndex % 3 == 0 else False)
+            dummyIndexes.sort()
 
             dummyStrips = []
             for index in dummyIndexes:
@@ -44,17 +47,15 @@ class ProcessPlayers:
                 strip = image[index - 5: index + 5, linePos - self.stripWidth:linePos + self.stripWidth].copy()
                 dummyStrips.append(strip)
                 cv2.circle(image, (linePos, index), 5, (255, 0, 0), 10)
-                #cv2.imshow("test", strip)
-                #cv2.waitKey()
-            #dummyStrips[0] = cv2.cvtColor(dummyStrips[0], cv2.COLOR_RGB2GRAY)
 
             (width, center) = self.computeDummyWidth(dummyStrips, currentPlayerColor)
+            playerIndex = 1
             for index in dummyIndexes:
-                dummys.append(models.Dummy((linePos, index), belongs, lineIndex, (linePos + center, index)))
+                dummys.append(models.Dummy((linePos, index), playerIndex, lineIndex, (linePos + center, index), belongs))
                 cv2.rectangle(image, (linePos + center - int(width/2), index - int(self.dummyHeight / 2)), (linePos + center + int(width/2), index + int(self.dummyHeight / 2)), (255, 0, 0))
+                playerIndex += 1
 
-            #cv2.imshow("Image", image)
-            #cv2.waitKey()
+
             lineIndex += 1
 
         return dummys
@@ -64,7 +65,7 @@ class ProcessPlayers:
         i = 0
         for strip in strips:
             gray = cv2.cvtColor(strip,cv2.COLOR_RGB2GRAY)
-            ret,gray = cv2.threshold(gray,162,255,0)
+            ret,gray = cv2.threshold(gray,162,255,0, cv2.THRESH_BINARY)
             strips[i] = gray
             #strips[i] = cv2.cvtColor(strip, cv2.COLOR_RGB2HSV)
             i += 1
@@ -89,7 +90,7 @@ class ProcessPlayers:
         i = 0
         for x in colorValues:
             # Magic constnat? Yes, change it if detection of feet doesn't work, but be carefoul it can damage your computer
-            if x < 3000 and abs(i - self.stripWidth) >abs(index - self.stripWidth):
+            if x < FEET_DETECTION_TOLERANCE and abs(i - self.stripWidth) > abs(index - self.stripWidth):
                 index = i
             i += 1
 

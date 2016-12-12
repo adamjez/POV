@@ -30,8 +30,9 @@ class Dummy(BaseModel):
     def render(self, image):
         cv2.rectangle(image, self.position, (self.position[0] + 3, self.position[1] + 3), (255, 0, 0), 3)
 
-    def __init__(self, position, playerIndex, lineIndex, footPosition):
+    def __init__(self, position, playerIndex, lineIndex, footPosition, player):
         super().__init__(position)
         self.playerIndex = playerIndex
         self.lineIndex = lineIndex
         self.footPosition = footPosition
+        self.player = player
