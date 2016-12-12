@@ -14,10 +14,10 @@ import game
 ####################
 # Field Parameters #
 ####################
-LeftTopCorner = (75, 23)  # Specifies corner for playground rectangle
+LeftTopCorner = (80, 25)  # Specifies corner for playground rectangle
 RightBottomCorner = (770, 515)  # Specifies corner for playground rectangle
 
-LinePositions = [110, 270, 430, 595]  # Specifies lines distance in pixels from left
+LinePositions = [105, 265, 425, 588]  # Specifies lines distance in pixels from left
 LinesWidth = 40  # Width of line in pixels for line segmentations
 
 LinesBelongs = [1, 2, 1, 2]  # Specifies who owns players on given line indexed from left to right
@@ -64,7 +64,7 @@ def processVideo(videoPath):
     while ret:  # note that we don't have to use frame number here, we could read from a live written file.
         currentTime = int(1 / fps * 1000)  # in mSec
 
-        # visualParameters(frame)
+        visualParameters(frame)
         # cv2.imshow("frameWindow", frame)
         # cv2.waitKey()
 

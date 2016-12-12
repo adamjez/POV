@@ -26,7 +26,8 @@ class processor:
 
     def run(self, image):
         height, width, channels = image.shape
-        players = self.processLines(image, height)
+        # players = self.processLines(image, height)
+        players = []
         ball = self.process_ball.detect(image)
         return game.GameFrame(ball, players, image)
 
