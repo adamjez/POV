@@ -48,7 +48,7 @@ class processor:
             for index in dummyIndexes:
                 strip = image[index - 5: index + 5, linePos - 60:linePos + 60].copy()
                 dummyStrips.append(strip)
-                #cv2.circle(image, (int(self.linesWidth/2), index), 5, (255, 0, 0), 10)
+                cv2.circle(image, (linePos, index), 5, (255, 0, 0), 10)
                 #cv2.imshow("test", strip)
                 #cv2.waitKey()
 
@@ -62,13 +62,11 @@ class processor:
             lineIndex += 1
 
         cv2.imshow("Image", image)
-        cv2.waitKey()
+        #cv2.waitKey()
 
         return dummys
 
     def computeDummyWidth(self, strips, playerColor):
-        values = []
-        greenValues = []
         colorValues = []
         color = (99, 44)
         strips[0] = cv2.cvtColor(strips[0], cv2.COLOR_RGB2HSV)
@@ -79,39 +77,31 @@ class processor:
         #cv2.imshow("test2", strips[1])
         #cv2.waitKey()
         for i in range(120):
-            diff = 0
-            greenDiff = 0
             colorDiff = 0
             for j in range(10):
-                diff += sum(abs(strips[0][j, i] - strips[1][j, i]))
-                greenDiff += sum(abs(strips[0][j, i] - color[0])) + sum(abs(strips[1][j, i] - color[0]))
-                colorDiff += sum(abs(strips[0][j, i] - playerColor) + abs(strips[1][j, i] - playerColor))
-            values.append(diff)
-            greenValues.append(greenDiff)
+                colorDiff += abs(strips[0][j, i][1] - playerColor[1]) + abs(strips[1][j, i][1] - playerColor[1]) 
+                + abs(strips[0][j, i][0] - playerColor[0]) + abs(strips[1][j, i][0] - playerColor[0])
+                + (abs(strips[0][j, i][2] - playerColor[2]) + abs(strips[1][j, i][2] - playerColor[2])) / 2
             colorValues.append(colorDiff)
 
-        greenValues = gaussian_filter(greenValues, sigma=2, mode='nearest')
-
-        rows = gaussian_filter(values, sigma=4, mode='nearest')
-
         colorValues = colorValues / np.max(colorValues)
-        colorValues = gaussian_filter(colorValues, sigma=2)
+        colorValues = gaussian_filter(colorValues, sigma=2, mode='nearest')
 
-        plt.plot(range(0, len(colorValues)), colorValues)
+        #plt.plot(range(0, len(colorValues)), colorValues)
 
         index = colorValues.argmin(axis=0)
         colorValues[self.normalize(index - 16, 120):self.normalize(index + 16, 120)] = sys.maxsize
         index2 = colorValues.argmin(axis=0)
         #plt.plot(range(0, len(colorValues)), colorValues)
-        plt.show()
+        #plt.show()
 
         if colorValues[index2] < 0.4:
             # we got two indexes
             mainIndex = index if abs(index - 60) < abs(index2 - 60) else index2
             minorIndex = index2 if mainIndex == index else index
 
-            center = int((mainIndex + minorIndex) / 2) - 60
-            width = abs(mainIndex - minorIndex) * 2 + 20
+            center = int((minorIndex - 60) * 1.3)
+            width = 40
             return (width, center)
 
         return (self.linesWidth, 0)
@@ -137,6 +127,12 @@ class processor:
             index = firstIndex + playerIndex * distanceBetweenDummys
             rowIndexes.append(index)
 
+        # try hill climbing for even better results
+        i = 0
+        for rowIndex in rowIndexes:
+            rowIndexes[i] = self.hillClimbing(rowIndex, rows)
+            i += 1
+
         if computeLastMiddlePlayer and len(rowIndexes) == 2:
             # if we got atleast 2 players and they are on the sides we can get middle one
             # If distance between these 2 players is greater then distance between dummys and magic constant so we can find middle one
@@ -144,6 +140,29 @@ class processor:
             rowIndexes.append(index)
 
         return rowIndexes
+
+    def hillClimbing(self, startingIndex, rows):
+        currentIndex = startingIndex;
+        maxIndex = len(rows)
+        while True:
+            L = self.neighbors(currentIndex, maxIndex);
+            nextEval = np.inf;
+            nextIndex = None;
+            for x in L: 
+                if rows[x] < nextEval:
+                    nextIndex = x;
+                    nextEval = rows[x];
+            if nextEval >= rows[currentIndex]:
+                #Return current node since no better neighbors exist
+                return currentIndex;
+            currentIndex = nextIndex
+
+    def neighbors(self, index, maxIndex):
+        if index == 0:
+            return [index + 1]
+        elif index == maxIndex:
+            return [index - 1]
+        return [index + 1, index - 1]
 
     def findNMinims(self, rows, playersCount, distanceBetweenDummys):
         rowsCount = len(rows)
