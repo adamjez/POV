@@ -1,9 +1,14 @@
+import cv2
+
 class Ball(object):
     """Represents ball in playground"""
-    def __init__(self, position, width, height):
+    def __init__(self, position, radius):
         self.position = position
-        self.width = width
-        self.height = height
+        self.radius = radius
+
+    def render(self, image):
+        cv2.circle(image, self.position, self.radius, (0, 255, 0), 2)
+
 
 class Dummy(object):
     """Represents dummy (footbal player) on the line"""
