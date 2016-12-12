@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
-
 import models
+from drawer import Drawer
+
+DEBUG = True
 
 
 class ProcessBall:
@@ -36,7 +38,7 @@ class ProcessBall:
     def __init__(self):
         self.setup_template()
 
-    def check_ball_color_from_center(self, hsv):
+    def _check_ball_color_from_center(self, hsv):
         """
         For debug checking HSV color from "center" of playground
         :param hsv:
@@ -67,21 +69,38 @@ class ProcessBall:
 
         hsv = self._prepare_image(image)
         mask = self._get_threshold_mask(hsv)
+        mask_visual = Drawer(mask, "Mask", cv2.COLOR_GRAY2RGB)
 
-        im2, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        if DEBUG:
+            mask_visual.draw_text(str(self.ball_low_corr) + "|" + str(self.ball_up_corr))
 
-        visual = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
+        best_circle = self._get_best_circle(mask, mask_visual)
 
+        ball = models.Ball((-1, -1), 0)
+        if best_circle is not None:
+            ball = models.Ball(best_circle[0], best_circle[1])
+
+        if DEBUG:
+            mask_visual \
+                .draw_model(ball) \
+                .show()
+
+        return ball
+
+    def _get_best_circle(self, mask, mask_visual):
         min_match_error = np.inf
         best_circle = None
 
+        im2, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         for cnt in contours:
-            cv2.drawContours(visual, cnt, -1, (0, 255, 0), 1)
+            if DEBUG:
+                mask_visual.draw_contour(cnt)
 
             if cnt.size < self.MIN_CONTOUR_SIZE:
                 continue
 
-            cv2.drawContours(visual, cnt, -1, (255, 0, 0), 1)
+            if DEBUG:
+                mask_visual.draw_contour(cnt, (255, 0, 0))
 
             (x, y), radius = cv2.minEnclosingCircle(cnt)
             if radius < self.MIN_CONTOUR_RADIUS:
@@ -90,7 +109,8 @@ class ProcessBall:
             center = (int(x), int(y))
             radius = int(radius)
 
-            cv2.circle(visual, center, radius, (0, 255, 0), 2)
+            if DEBUG:
+                mask_visual.draw_circle(center, radius)
 
             if len(contours) > 1:
                 ret = cv2.matchShapes(cnt, self.ball_template, 1, 0.0)
@@ -100,18 +120,4 @@ class ProcessBall:
             else:
                 best_circle = (center, radius)
 
-        self.draw_text(mask, str(self.ball_low_corr) + "|" + str(self.ball_up_corr))
-
-        ball = models.Ball((-1, -1), 0)
-        if best_circle is not None:
-            ball = models.Ball(best_circle[0], best_circle[1])
-
-        ball.render(image)
-
-        cv2.imshow("mask", visual)
-        cv2.imshow("img", image)
-
-        return ball
-
-    def draw_text(self, image, text, position=(50, 50), color=(0, 0, 255), size=0.9):
-        cv2.putText(image, text, position, cv2.FONT_HERSHEY_PLAIN, size, color)
+        return best_circle

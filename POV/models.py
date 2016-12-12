@@ -1,20 +1,37 @@
 import cv2
+from abc import ABC, abstractmethod
 
-class Ball(object):
-    """Represents ball in playground"""
-    def __init__(self, position, radius):
+
+class BaseModel(ABC):
+    @abstractmethod
+    def __init__(self, position):
         self.position = position
-        self.radius = radius
+
+    @abstractmethod
+    def render(self, image):
+        pass
+
+
+class Ball(BaseModel):
+    """Represents ball in playground"""
 
     def render(self, image):
+        cv2.rectangle(image, self.position, (self.position[0] + 2, self.position[1] + 2), (0, 255, 0), 3)
         cv2.circle(image, self.position, self.radius, (0, 255, 0), 2)
 
+    def __init__(self, position, radius):
+        super().__init__(position)
+        self.radius = radius
 
-class Dummy(object):
+
+class Dummy(BaseModel):
     """Represents dummy (footbal player) on the line"""
+
+    def render(self, image):
+        print("TODO")
+        # TODO what should we render?
+
     def __init__(self, position, playerIndex, lineIndex):
-        self.position = position
+        super().__init__(position)
         self.playerIndex = playerIndex
         self.lineIndex = lineIndex
-
-
