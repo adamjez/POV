@@ -26,22 +26,24 @@ class processor:
 
     def run(self, image):
         height, width, channels = image.shape
-        # players = self.processLines(image, height)
-        players = []
+        players = self.processLines(image, height)
         ball = self.process_ball.detect(image)
-        return game.GameFrame(ball, players)
+        return game.GameFrame(ball, players, image)
 
     def processLines(self, image, height):
         dummys = []
         lineIndex = 0
         for linePos, belongs, playersCount in zip(self.linesPosition, self.lineBelongs, self.playersCount):
-            sourceSegment = image[0:height, linePos - int(self.linesWidth/2):linePos + int(self.linesWidth/2)].copy()
+            sourceSegment = image[0:height,
+                            linePos - int(self.linesWidth / 2):linePos + int(self.linesWidth / 2)].copy()
 
-            dummyIndexes = self.segmentLinesFirstVersion(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
+            dummyIndexes = self.segmentLinesFirstVersion(sourceSegment.copy(),
+                                                         self.player1Color if belongs == 1 else self.player2Color,
+                                                         playersCount)
 
             for rowIndex in dummyIndexes:
-                dummys.append(models.Dummy((linePos, dummyIndexes), belongs, lineIndex))
-            #lineSegment2 = self.segmentLinesSecondVersion(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
+                dummys.append(models.Dummy((linePos, rowIndex), belongs, lineIndex))
+            # lineSegment2 = self.segmentLinesSecondVersion(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
 
             lineIndex += 1
 
@@ -60,18 +62,18 @@ class processor:
         for playerIndex in range(playersCount):
             # if we got atleast 2 players and they are on the sides we can get middle one
             # If distance between these 2 players is greater then distance between dummys and magic constant so we can find middle one
-            if playersCount == 3 and len(rowIndexes) == 2 and abs(rowIndexes[0] - rowIndexes[1]) > (self.distanceBetweenDummys * 1.6):
+            if playersCount == 3 and len(rowIndexes) == 2 and abs(rowIndexes[0] - rowIndexes[1]) > (
+                self.distanceBetweenDummys * 1.6):
                 index = int((rowIndexes[0] + rowIndexes[1]) / 2)
             else:
                 index = rows.argmin(axis=0)
 
             rowIndexes.append(index)
             rows[self.normalizeToFrameHeight(index - self.distanceBetweenDummys, frameHeight):
-                 self.normalizeToFrameHeight(index + self.distanceBetweenDummys, frameHeight)] = sys.maxsize
-            cv2.circle(image, (int(self.linesWidth/2), index), 5, (255, 0, 0), 10)
+            self.normalizeToFrameHeight(index + self.distanceBetweenDummys, frameHeight)] = sys.maxsize
+            cv2.circle(image, (int(self.linesWidth / 2), index), 5, (255, 0, 0), 10)
 
-
-        cv2.imshow("LineSegment", image)
+        # cv2.imshow("LineSegment", image)
         # cv2.waitKey()
 
         return rowIndexes

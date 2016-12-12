@@ -14,10 +14,10 @@ import game
 ####################
 # Field Parameters #
 ####################
-LeftTopCorner = (75, 14)  # Specifies corner for playground rectangle
-RightBottomCorner = (770, 510)  # Specifies corner for playground rectangle
+LeftTopCorner = (75, 23)  # Specifies corner for playground rectangle
+RightBottomCorner = (770, 515)  # Specifies corner for playground rectangle
 
-LinePositions = [100, 270, 430, 600]  # Specifies lines distance in pixels from left
+LinePositions = [110, 270, 430, 595]  # Specifies lines distance in pixels from left
 LinesWidth = 40  # Width of line in pixels for line segmentations
 
 LinesBelongs = [1, 2, 1, 2]  # Specifies who owns players on given line indexed from left to right
@@ -72,12 +72,10 @@ def processVideo(videoPath):
         gameFrame = proc.run(playground)
         currentGame.processFrame(gameFrame)
 
-        if space_hit():
+        if space_hit(1):
             print("(+) Video paused")
-            while True:
-                if space_hit():
-                    print("(>) Video unpaused")
-                    break
+            space_hit()
+            print("(>) Video unpaused")
 
         if break_loop():
             break
@@ -88,8 +86,11 @@ def processVideo(videoPath):
     cv2.destroyAllWindows()
 
 
-def space_hit():
-    ch = 0xFF & cv2.waitKey(1)
+def space_hit(delay=None):
+    if delay is None:
+        ch = 0xFF & cv2.waitKey()
+    else:
+        ch = 0xFF & cv2.waitKey(delay)
     if ch == 32:  # escape
         return True
 
