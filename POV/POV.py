@@ -3,6 +3,7 @@ import sys
 import numpy
 import core
 import game
+from drawer import Drawer
 
 ###################
 # Run Information #
@@ -30,17 +31,14 @@ DistanceBetweenDummys = 145  # Specifies distance between dummys on lines
 DummyHeight = 46
 ColorTolerance = 40  # Tolerance for segmentation by color
 
-GoalGates = [
-    [
-        (86, 211),
-        (97, 341)
-    ],
+options = {
+    "BallHSV": [121, 193, 164],
 
-    [
-        (800, 300),
-        (800, 500)
+    "GoalGates": [
+        [(86, 211), (97, 341)],
+        [(755, 208), (765, 340)]
     ]
-]
+}
 
 
 def visualParameters(image):
@@ -50,14 +48,14 @@ def visualParameters(image):
     for point in LinePositions:
         cv2.line(image, (LeftTopCorner[0] + point, 0), (LeftTopCorner[0] + point, height), (0, 0, 255))
 
-    for gate in GoalGates:
+    for gate in options["GoalGates"]:
         cv2.rectangle(image, gate[0], gate[1], (0, 0, 255), 1)
+
 
 
 def reset_to_start(vidFile, frame_counter, frames_count):
     if frame_counter == frames_count - 1:
         vidFile.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        print("Resetting video to start")
         return True
 
     return False
@@ -75,7 +73,7 @@ def processVideo(videoPath, is_looping):
         sys.exit(1)
 
     preproc = core.preprocessor(LeftTopCorner, RightBottomCorner)
-    proc = core.processor(LinePositions, LinesWidth, Player1Color, Player2Color, ColorTolerance,
+    proc = core.processor(options, LinePositions, LinesWidth, Player1Color, Player2Color, ColorTolerance,
                           LinesBelongs, PlayersCount, DistanceBetweenDummys)
 
     fps = vidFile.get(cv2.CAP_PROP_FPS)

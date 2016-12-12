@@ -3,19 +3,13 @@ import numpy as np
 import models
 from drawer import Drawer
 
-DEBUG = False
+DEBUG = True
 
 
 class ProcessBall:
     BALL_TEMPLATE_SIZE = 20
     MIN_CONTOUR_SIZE = 10
-    MIN_CONTOUR_RADIUS = 7
-
-    ball_template = None
-
-    ball_hsv_color = np.array([121, 193, 164])
-    ball_low_corr = np.array([50, 50, 50])  # TODO maybe tweak the corrections
-    ball_up_corr = np.array([20, 20, 20])
+    MIN_CONTOUR_RADIUS = 9
 
     def check_keyboard(self):
         ch = 0xFF & cv2.waitKey(1)
@@ -28,15 +22,18 @@ class ProcessBall:
         elif ch == ord('l'):
             self.ball_up_corr -= np.ones([3], dtype=np.int_)
 
-    def setup_template(self):
+    def create_template(self):
         template = np.zeros([2 * self.BALL_TEMPLATE_SIZE, 2 * self.BALL_TEMPLATE_SIZE], np.uint8)
         cv2.circle(template, (self.BALL_TEMPLATE_SIZE, self.BALL_TEMPLATE_SIZE), self.BALL_TEMPLATE_SIZE,
                    (255, 255, 255), -1)
         im2, circle_contours, hierarchy = cv2.findContours(template, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-        self.ball_template = circle_contours[0]
+        return circle_contours[0]
 
-    def __init__(self):
-        self.setup_template()
+    def __init__(self, options):
+        self.ball_hsv_color = options["BallHSV"]
+        self.ball_low_corr = np.array([50, 50, 50])  # TODO maybe tweak the corrections
+        self.ball_up_corr = np.array([20, 20, 20])
+        self.ball_template = self.create_template()
 
     def _check_ball_color_from_center(self, hsv):
         """
@@ -60,7 +57,11 @@ class ProcessBall:
         color_upper = self.ball_hsv_color + self.ball_up_corr
 
         mask = cv2.inRange(hsv, color_lower, color_upper)
-        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, None, iterations=3)  # erode->dilate
+        # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, None, iterations=3)  # erode->dilate
+
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=3)  # erode->dilate
 
         return mask
 
@@ -68,6 +69,7 @@ class ProcessBall:
         self.check_keyboard()
 
         hsv = self._prepare_image(image)
+
         mask = self._get_threshold_mask(hsv)
         mask_visual = Drawer(mask, "Mask", cv2.COLOR_GRAY2RGB)
 
@@ -76,7 +78,7 @@ class ProcessBall:
 
         best_circle = self._get_best_circle(mask, mask_visual)
 
-        ball = models.Ball((-1, -1), 0)
+        ball = models.Ball(models.BaseModel.INVALID_POSITION, 0)
         if best_circle is not None:
             ball = models.Ball(best_circle[0], best_circle[1])
 
@@ -89,7 +91,7 @@ class ProcessBall:
 
     def _get_best_circle(self, mask, mask_visual):
         min_match_error = np.inf
-        best_circle = None
+        best_ball = None
 
         im2, contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         for cnt in contours:
@@ -116,8 +118,8 @@ class ProcessBall:
                 ret = cv2.matchShapes(cnt, self.ball_template, 1, 0.0)
                 if ret < min_match_error:
                     min_match_error = ret
-                    best_circle = (center, radius)
+                    best_ball = (center, radius)
             else:
-                best_circle = (center, radius)
+                best_ball = (center, radius)
 
-        return best_circle
+        return best_ball

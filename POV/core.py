@@ -1,12 +1,12 @@
 import game
-from process_ball import ProcessBall
-from process_players import ProcessPlayers
+from processor.process_ball import ProcessBall
+from processor.process_players import ProcessPlayers
 
 
 class processor:
-    def __init__(self, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount,
+    def __init__(self, options, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount,
                  distanceBetweenDummys):
-        self.process_ball = ProcessBall()
+        self.process_ball = ProcessBall(options)
         self.process_players = ProcessPlayers(linesPosition, linesWidth, player1Color, player2Color, tolerance,
                                               lineBelongs, playersCount, distanceBetweenDummys)
 
