@@ -1,18 +1,20 @@
 import game
-from processor.process_ball import ProcessBall
-from processor.process_players import ProcessPlayers
+from detector.detect_ball import DetectBall
+from detector.detect_goal import DetectGoal
+from detector.detect_players import DetectPlayers
 
 
 class processor:
     def __init__(self, options, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount,
                  distanceBetweenDummys):
-        self.process_ball = ProcessBall(options)
-        self.process_players = ProcessPlayers(linesPosition, linesWidth, player1Color, player2Color, tolerance,
-                                              lineBelongs, playersCount, distanceBetweenDummys)
+        self.detect_players = DetectPlayers(linesPosition, linesWidth, player1Color, player2Color, tolerance,
+                                            lineBelongs, playersCount, distanceBetweenDummys)
+        self.detect_ball = DetectBall(options)
+        self.detect_goal = DetectGoal(options)
 
     def run(self, image):
-        players = self.process_players.detect(image)
-        ball = self.process_ball.detect(image)
+        players = self.detect_players.detect(image)
+        ball = self.detect_ball.detect(image)
         return game.GameFrame(ball, players, image)
 
 

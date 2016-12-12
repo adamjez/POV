@@ -6,7 +6,7 @@ from drawer import Drawer
 DEBUG = True
 
 
-class ProcessBall:
+class DetectBall:
     BALL_TEMPLATE_SIZE = 20
     MIN_CONTOUR_SIZE = 10
     MIN_CONTOUR_RADIUS = 9

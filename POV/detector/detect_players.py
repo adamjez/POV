@@ -9,7 +9,7 @@ import models
 # Bigger value more feet detection with more false alarams
 FEET_DETECTION_TOLERANCE = 3000
 
-class ProcessPlayers:
+class DetectPlayers:
     def __init__(self, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount,
                  distanceBetweenDummys):
         self.linesPosition = linesPosition
