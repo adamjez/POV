@@ -27,9 +27,8 @@ class processor:
     def run(self, image):
         height, width, channels = image.shape
         players = self.processLines(image, height)
-        # players = []
         ball = self.process_ball.detect(image)
-        return game.GameFrame(ball, players)
+        return game.GameFrame(ball, players, image)
 
     def processLines(self, image, height):
         dummys = []
@@ -43,7 +42,7 @@ class processor:
                                                          playersCount)
 
             for rowIndex in dummyIndexes:
-                dummys.append(models.Dummy((linePos, dummyIndexes), belongs, lineIndex))
+                dummys.append(models.Dummy((linePos, rowIndex), belongs, lineIndex))
             # lineSegment2 = self.segmentLinesSecondVersion(sourceSegment.copy(), self.player1Color if belongs == 1 else self.player2Color, playersCount)
 
             lineIndex += 1
@@ -74,7 +73,7 @@ class processor:
             self.normalizeToFrameHeight(index + self.distanceBetweenDummys, frameHeight)] = sys.maxsize
             cv2.circle(image, (int(self.linesWidth / 2), index), 5, (255, 0, 0), 10)
 
-        cv2.imshow("LineSegment", image)
+        # cv2.imshow("LineSegment", image)
         # cv2.waitKey()
 
         return rowIndexes
