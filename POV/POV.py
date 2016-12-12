@@ -17,7 +17,7 @@ import game
 LeftTopCorner = (80, 25)  # Specifies corner for playground rectangle
 RightBottomCorner = (770, 515)  # Specifies corner for playground rectangle
 
-LinePositions = [105, 265, 425, 588]  # Specifies lines distance in pixels from left
+LinePositions = [95, 265, 425, 588]  # Specifies lines distance in pixels from left
 LinesWidth = 40  # Width of line in pixels for line segmentations
 
 LinesBelongs = [1, 2, 1, 2]  # Specifies who owns players on given line indexed from left to right
@@ -52,7 +52,7 @@ def processVideo(videoPath):
 
     preproc = core.preprocessor(LeftTopCorner, RightBottomCorner)
     proc = core.processor(LinePositions, LinesWidth, Player1Color, Player2Color, ColorTolerance,
-                          LinesBelongs, PlayersCount, DistanceBetweenDummys, DummyHeight)
+                          LinesBelongs, PlayersCount, DistanceBetweenDummys)
 
     fps = vidFile.get(cv2.CAP_PROP_FPS)
     nFrames = int(vidFile.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -62,7 +62,7 @@ def processVideo(videoPath):
     currentGame = game.Game(fps, nFrames)
 
     currentTime = 0
-    for i in range(1): #366
+    for i in range(366): #
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
         currentTime += int(1 / fps * 1000)
     
