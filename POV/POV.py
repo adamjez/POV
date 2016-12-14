@@ -62,7 +62,7 @@ def processVideo(videoPath):
     currentGame = game.Game(fps, nFrames)
 
     currentTime = 0
-    for i in range(120): #
+    for i in range(314): #
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
         currentTime += int(1 / fps * 1000)
     
