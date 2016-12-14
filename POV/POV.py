@@ -3,6 +3,7 @@ import sys
 import numpy
 import core
 import game
+from drawer import Drawer
 
 ###################
 # Run Information #
@@ -17,7 +18,7 @@ import game
 LeftTopCorner = (80, 25)  # Specifies corner for playground rectangle
 RightBottomCorner = (770, 515)  # Specifies corner for playground rectangle
 
-LinePositions = [95, 265, 425, 588]  # Specifies lines distance in pixels from left
+LinePositions = [105, 265, 425, 588]  # Specifies lines distance in pixels from left
 LinesWidth = 40  # Width of line in pixels for line segmentations
 
 LinesBelongs = [1, 2, 1, 2]  # Specifies who owns players on given line indexed from left to right
@@ -30,16 +31,36 @@ DistanceBetweenDummys = 145  # Specifies distance between dummys on lines
 DummyHeight = 46
 ColorTolerance = 40  # Tolerance for segmentation by color
 
+options = {
+    "BallHSV": [121, 193, 164],
 
-def visualParameters(image):
-    cv2.rectangle(image, LeftTopCorner, RightBottomCorner, (255, 0, 0))
+    "GoalGates": [
+        [(86, 211), (97, 341)],
+        [(755, 208), (765, 340)]
+    ],
+}
 
-    height, width, channels = image.shape
+
+def visualParameters(playground):
+    cv2.rectangle(playground, LeftTopCorner, RightBottomCorner, (255, 0, 0))
+
+    height, width, channels = playground.shape
     for point in LinePositions:
-        cv2.line(image, (LeftTopCorner[0] + point, 0), (LeftTopCorner[0] + point, height), (0, 0, 255))
+        cv2.line(playground, (LeftTopCorner[0] + point, 0), (LeftTopCorner[0] + point, height), (0, 0, 255))
+
+    for gate in options["GoalGates"]:
+        cv2.rectangle(playground, gate[0], gate[1], (0, 0, 255), 1)
 
 
-def processVideo(videoPath):
+def reset_to_start(vidFile, frame_counter, frames_count):
+    if frame_counter == frames_count - 1:
+        vidFile.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        return True
+
+    return False
+
+
+def processVideo(videoPath, is_looping):
     try:
         vidFile = cv2.VideoCapture(videoPath)
     except:
@@ -51,7 +72,7 @@ def processVideo(videoPath):
         sys.exit(1)
 
     preproc = core.preprocessor(LeftTopCorner, RightBottomCorner)
-    proc = core.processor(LinePositions, LinesWidth, Player1Color, Player2Color, ColorTolerance,
+    proc = core.processor(options, LinePositions, LinesWidth, Player1Color, Player2Color, ColorTolerance,
                           LinesBelongs, PlayersCount, DistanceBetweenDummys)
 
     fps = vidFile.get(cv2.CAP_PROP_FPS)
@@ -59,35 +80,39 @@ def processVideo(videoPath):
     print("frame number: %s" % nFrames)
     print("FPS value: %s" % fps)
     print("size: %d x %d" % (vidFile.get(cv2.CAP_PROP_FRAME_WIDTH), vidFile.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+    print("looping: %r" % is_looping)
     currentGame = game.Game(fps, nFrames)
 
+    frame_counter = 0
     currentTime = 0
-    for i in range(314): #
+    while vidFile.isOpened():  # note that we don't have to use frame number here, we could read from a live written file.
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
-        currentTime += int(1 / fps * 1000)
-    
-    while ret:  # note that we don't have to use frame number here, we could read from a live written file.
-        visualParameters(frame)
-        # cv2.imshow("frameWindow", frame)
-        # cv2.waitKey()
-        print("Current Time: " + str(currentTime))
+        if ret is False: break
 
-        #cv2.imshow("test", frame)
-        #cv2.waitKey()
+        if frame_counter < 314:
+            frame_counter += 1
+            currentTime += int(1 / fps * 1000)
+            continue
+
+        if is_looping and reset_to_start(vidFile, frame_counter, nFrames):
+            frame_counter = 0
+
+        # visualParameters(frame)
+
         playground = preproc.run(frame)
         gameFrame = proc.run(playground)
-        currentGame.processFrame(gameFrame)
+        currentGame.processFrame(gameFrame, currentTime)
 
         if space_hit(1):
-            print("(+) Video paused")
+            print("(x) Video paused")
             space_hit()
             print("(>) Video unpaused")
 
         if break_loop():
             break
 
-        ret, frame = vidFile.read()
         currentTime += int(1 / fps * 1000)  # in mSec
+        frame_counter += 1
 
     vidFile.release()
     cv2.destroyAllWindows()
@@ -134,16 +159,19 @@ def processImage(imagePath):
 ################
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
+    args_count = len(sys.argv)
+
+    if args_count < 3:
         print("Incorrect number of parameters given")
         sys.exit(1)
 
+    isLooping = args_count >= 4 and sys.argv[3] == "-l"
     inputType = sys.argv[1]
 
     if inputType == "-i":
         processImage(sys.argv[2])
     elif inputType == "-v":
-        processVideo(sys.argv[2])
+        processVideo(sys.argv[2], isLooping)
     else:
         print("Unkown parameter given")
         sys.exit(1)
