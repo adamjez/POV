@@ -88,12 +88,17 @@ def processVideo(videoPath, is_looping):
     while vidFile.isOpened():  # note that we don't have to use frame number here, we could read from a live written file.
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
         if ret is False: break
-        
+
+        if frame_counter < 314:
+            frame_counter += 1
+            currentTime += int(1 / fps * 1000)
+            continue
+
         if is_looping and reset_to_start(vidFile, frame_counter, nFrames):
             frame_counter = 0
 
         # visualParameters(frame)
-		print("Current Time: " + str(currentTime))
+        print("Current Time: " + str(currentTime))
 
         playground = preproc.run(frame)
         gameFrame = proc.run(playground)

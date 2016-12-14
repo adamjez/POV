@@ -25,7 +25,7 @@ class DetectPlayers:
         self.stripHeight = 10
 
     def detect(self, image):
-        return []  # TODO comment when needed!
+        # return []  # TODO comment when needed!
         height, width, channels = image.shape
         return self.processLines(image, height)
 
