@@ -1,10 +1,12 @@
 import cv2
 import models
+import numpy as np
 
 
 class Drawer:
     image = None
     window_name = None
+    window_correction = (0, 90)
 
     def __init__(self, image, window_name="OUTPUT", code=None):
         """
@@ -28,7 +30,10 @@ class Drawer:
         :param size:
         :return: Drawer
         """
-        cv2.putText(self.image, text, position, cv2.FONT_HERSHEY_COMPLEX, size, color)
+        fontFace = cv2.FONT_HERSHEY_COMPLEX
+        fontSize = cv2.getTextSize(text, fontFace, size, 1)
+        realPosition = tuple(np.subtract(np.add(position, self.window_correction), (0, fontSize[0][1])))
+        cv2.putText(self.image, text, realPosition, fontFace, size, color)
         return self
 
     def draw_circle(self, center, radius, color=(0, 0, 255), thickness=2):
@@ -43,7 +48,7 @@ class Drawer:
         cv2.rectangle(self.image, pt1, pt2, color, thickness)
         return self
 
-    def draw_marker(self, point, color=(255,0,0)):
+    def draw_marker(self, point, color=(255, 0, 0)):
         cv2.drawMarker(self.image, point, color)
         return self
 

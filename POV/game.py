@@ -10,7 +10,7 @@ class Game(object):
         self.frameCount = frameCount
         self.score = [0, 0]
 
-    def processFrame(self, gameFrame):
+    def processFrame(self, gameFrame, currentTime):
         output = Drawer(gameFrame.image)
         output.draw_model(gameFrame.ball)
 
@@ -22,8 +22,12 @@ class Game(object):
 
         self.score = np.add(self.score, gameFrame.goal)
 
-        output.draw_text(str(self.score[0]), (295, 60), size=2)
-        output.draw_text(str(self.score[1]), (360, 60), size=2)
+        output.draw_text(str(self.score[0]), (295, 0), size=2)
+        output.draw_text(str(self.score[1]), (355, 0), size=2)
+
+        width, height, depth = gameFrame.image.shape
+
+        output.draw_text(str(currentTime / 1000), (0, height - 290), size=0.6)
 
         output.show()
 

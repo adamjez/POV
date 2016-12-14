@@ -98,11 +98,10 @@ def processVideo(videoPath, is_looping):
             frame_counter = 0
 
         # visualParameters(frame)
-        print("Current Time: " + str(currentTime))
 
         playground = preproc.run(frame)
         gameFrame = proc.run(playground)
-        currentGame.processFrame(gameFrame)
+        currentGame.processFrame(gameFrame, currentTime)
 
         if space_hit(1):
             print("(x) Video paused")
