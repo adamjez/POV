@@ -10,16 +10,16 @@ class DetectBall:
     MIN_CONTOUR_SIZE = 10
     MIN_CONTOUR_RADIUS = 9
 
-    def check_keyboard(self):
-        ch = 0xFF & cv2.waitKey(1)
-        if ch == ord('i'):
-            self.ball_low_corr += np.ones([3], dtype=np.int_)
-        elif ch == ord('k'):
-            self.ball_low_corr -= np.ones([3], dtype=np.int_)
-        elif ch == ord('o'):
-            self.ball_up_corr += np.ones([3], dtype=np.int_)
-        elif ch == ord('l'):
-            self.ball_up_corr -= np.ones([3], dtype=np.int_)
+    # def check_keyboard(self):
+    #     ch = 0xFF & cv2.waitKey(1)
+    #     if ch == ord('i'):
+    #         self.ball_low_corr += np.ones([3], dtype=np.int_)
+    #     elif ch == ord('k'):
+    #         self.ball_low_corr -= np.ones([3], dtype=np.int_)
+    #     elif ch == ord('o'):
+    #         self.ball_up_corr += np.ones([3], dtype=np.int_)
+    #     elif ch == ord('l'):
+    #         self.ball_up_corr -= np.ones([3], dtype=np.int_)
 
     def create_template(self):
         size = models.Ball.BALL_KNOWN_RADIUS
@@ -66,7 +66,7 @@ class DetectBall:
         return mask
 
     def detect(self, image):
-        self.check_keyboard()
+        # self.check_keyboard()
 
         hsv = self._prepare_image(image)
 

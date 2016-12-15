@@ -85,6 +85,9 @@ def processVideo(videoPath, is_looping):
 
     frame_counter = 0
     currentTime = 0
+
+    # nFrames = 460 # TODO put away
+
     while vidFile.isOpened():  # note that we don't have to use frame number here, we could read from a live written file.
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
         if ret is False: break
@@ -101,14 +104,10 @@ def processVideo(videoPath, is_looping):
 
         playground = preproc.run(frame)
         gameFrame = proc.run(playground)
-        currentGame.processFrame(gameFrame, currentTime)
+        currentGame.processFrame(gameFrame, currentTime, frame_counter)
 
-        if space_hit(1):
-            print("(x) Video paused")
-            space_hit()
-            print("(>) Video unpaused")
-
-        if break_loop():
+        break_type = key_detected()
+        if break_type is True:
             break
 
         currentTime += int(1 / fps * 1000)  # in mSec
@@ -118,20 +117,18 @@ def processVideo(videoPath, is_looping):
     cv2.destroyAllWindows()
 
 
-def space_hit(delay=None):
-    if delay is None:
-        ch = 0xFF & cv2.waitKey()
-    else:
-        ch = 0xFF & cv2.waitKey(delay)
-    if ch == 32:  # escape
-        return True
-
-    return False
-
-
-def break_loop():
+def key_detected():
     ch = 0xFF & cv2.waitKey(1)
-    if ch == 27:  # escape
+    if ch == 32:  # escape
+        print("(x) Video paused")
+        while True:
+            ch = 0xFF & cv2.waitKey(1)
+            if ch == 32:  # escape
+                break
+
+        print("(>) Video unpaused")
+        return False
+    elif ch == 27:  # escape
         return True
     elif ch == ord('q'):
         return True

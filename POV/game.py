@@ -10,7 +10,7 @@ class Game(object):
         self.frameCount = frameCount
         self.score = [0, 0]
 
-    def processFrame(self, gameFrame, currentTime):
+    def processFrame(self, gameFrame, currentTime, frameNumber):
         output = Drawer(gameFrame.image)
         output.draw_model(gameFrame.ball)
 
@@ -27,7 +27,7 @@ class Game(object):
 
         width, height, depth = gameFrame.image.shape
 
-        output.draw_text(str(currentTime / 1000), (0, height - 290), size=0.6)
+        output.draw_text(str(currentTime / 1000) + "|" + str(frameNumber), (0, height - 290), size=0.6)
 
         output.show()
 
