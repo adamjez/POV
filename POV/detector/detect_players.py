@@ -49,12 +49,12 @@ class DetectPlayers:
 
                 if dummy_pos - self.stripHeight < 0:
                     strip = image[
-                            0: 2 * self.stripHeight,  # TODO changed this but is it ok?
+                            0: 2 * self.stripHeight,
                             linePos - self.stripWidth:linePos + self.stripWidth
                             ].copy()
                 elif dummy_pos + self.stripHeight >= height:
                     strip = image[
-                            height - self.stripHeight - 1: height - 1,
+                            height - 2 * self.stripHeight - 1: height - 1,
                             linePos - self.stripWidth:linePos + self.stripWidth
                             ].copy()
                 else:
@@ -73,7 +73,7 @@ class DetectPlayers:
             playerIndex = 1
             for dummy_pos in dummyIndexes:
                 dummys.append(
-                    models.Dummy((linePos, dummy_pos), playerIndex, lineIndex, (linePos + center, dummy_pos), belongs))
+                    models.Dummy((linePos, dummy_pos), (lineIndex, playerIndex), lineIndex, (linePos + center, dummy_pos), belongs))
                 # cv2.rectangle(image, (linePos + center - int(width / 2), index - int(self.dummyHeight / 2)),
                 #               (linePos + center + int(width / 2), index + int(self.dummyHeight / 2)), (255, 0, 0))
                 playerIndex += 1

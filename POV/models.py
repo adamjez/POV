@@ -46,6 +46,8 @@ class Ball(BaseModel):
     def __str__(self):
         return "(" + str(self.position) + " , " + str(self.BALL_KNOWN_RADIUS) + ")"
 
+    def get_position(self):
+        return self.position
 
 class Dummy(BaseModel):
     """Represents dummy (footbal player) on the line"""
@@ -60,3 +62,9 @@ class Dummy(BaseModel):
         self.lineIndex = lineIndex
         self.footPosition = footPosition
         self.player = player
+
+    def get_foot_position(self):
+        return self.footPosition
+
+    def get_player_index(self):
+        return self.playerIndex

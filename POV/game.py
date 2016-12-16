@@ -1,6 +1,6 @@
 from drawer import Drawer
 import numpy as np
-
+import cv2
 
 class Game(object):
     """Simulates the game and evaluates it"""
@@ -11,7 +11,7 @@ class Game(object):
         self.frameCount = frameCount
         self.score = [0, 0]
 
-    def processFrame(self, currentTime, frameNumber, ball, players, image, goal, heatmap):
+    def processFrame(self, currentTime, frameNumber, ball, players, image, goal, heatmap, touch):
         output = Drawer(image)
         output.draw_model(ball)
 
@@ -39,3 +39,6 @@ class Game(object):
 
         if heatmap is not None:
             Drawer(heatmap, "Ball heat map").show()
+
+        if touch is not None and touch[0]:
+            output.draw_text("TOUCH - playerId: " + str(touch[1]), (0, 0), size=2)

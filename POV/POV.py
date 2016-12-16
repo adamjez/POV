@@ -33,7 +33,7 @@ options = {
     },
 
     'Dummy': {
-        'FeetDetectionTolerance': 2000,  # Bigger value more feet detection with more false alarams
+        'FeetDetectionTolerance': 1700,  # Bigger value more feet detection with more false alarams
         'DistanceBetween': 145,  # Specifies distance between dummys on lines
         'Height': 40,
         'ColorTolerance': 40,  # Tolerance for segmentation by color
@@ -52,6 +52,10 @@ options = {
             [(0, 193), (15, 313)],
             [(675, 190), (690, 310)]
         )
+    },
+
+    "Touch": {
+        "ToleranceDetection": 34
     },
 }
 
@@ -104,8 +108,8 @@ def processVideo(videoPath, is_looping):
             frame_counter = 0
 
         playground = preproc.run(frame)
-        ball, players, image, goal, heatmap = proc.run(playground)
-        currentGame.processFrame(currentTime, frame_counter, ball, players, image, goal, heatmap)
+        ball, players, image, goal, heatmap, touch = proc.run(playground)
+        currentGame.processFrame(currentTime, frame_counter, ball, players, image, goal, heatmap, touch)
 
         break_type = key_detected()
         if break_type is True:
