@@ -48,7 +48,8 @@ class Dummy(BaseModel):
     """Represents dummy (footbal player) on the line"""
 
     def render_model(self, image):
-        cv2.rectangle(image, self.position, (self.position[0] + 3, self.position[1] + 3), (255, 0, 0), 3)
+        cv2.drawMarker(image, self.footPosition, (0, 255, 0))
+        cv2.rectangle(image, self.position, (self.position[0] + 3, self.position[1] + 3), (0, 255, 0), 3)
 
     def __init__(self, position, playerIndex, lineIndex, footPosition, player):
         super().__init__(position)

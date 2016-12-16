@@ -14,8 +14,7 @@ class processor:
         self.detect_goal = DetectGoal(options)
 
     def run(self, image):
-        # TODO do we need the copy? or how we're gonna handle writing to output (some output_frame?)
-        players = self.detect_players.detect(image.copy())
+        players = self.detect_players.detect(image)
         ball = self.detect_ball.detect(image)
         goal = self.detect_goal.detect(image, ball)
         return game.GameFrame(ball, players, image, goal)
