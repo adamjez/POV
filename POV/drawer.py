@@ -57,7 +57,7 @@ class Drawer:
         :param model: models.BaseModel
         :return:
         """
-        model.render(self.image)
+        model.render(self)
         return self
 
     def show(self):

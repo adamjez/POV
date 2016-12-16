@@ -11,17 +11,17 @@ class BaseModel(ABC):
         self.position = position
 
     @abstractmethod
-    def render_model(self, image):
+    def render_model(self, drawer):
         pass
 
-    def render(self, image):
+    def render(self, drawer):
         """
         Do not override this
         :param image:
         :return:
         """
         if self.position == self.INVALID_POSITION: return
-        self.render_model(image)
+        self.render_model(drawer)
 
     def is_visible(self):
         return self.position != self.INVALID_POSITION
@@ -33,10 +33,10 @@ class Ball(BaseModel):
     """
     BALL_KNOWN_RADIUS = 22
 
-    def render_model(self, image):
-        cv2.rectangle(image, self.position, (self.position[0] + 2, self.position[1] + 2), (255, 0, 0), 3)
-        cv2.circle(image, self.position, self.radius, (0, 200, 0), 1)
-        cv2.circle(image, self.position, self.BALL_KNOWN_RADIUS, (0, 255, 0), 2)
+    def render_model(self, drawer):
+        drawer.draw_rect((self.position, (self.position[0] + 2, self.position[1] + 2)), (255, 0, 0), 3)
+        drawer.draw_circle(self.position, self.radius, (0, 200, 0), 1)
+        drawer.draw_circle(self.position, self.BALL_KNOWN_RADIUS, (0, 255, 0), 2)
 
     def __init__(self, position, radius, contour):
         super().__init__(position)
@@ -47,9 +47,9 @@ class Ball(BaseModel):
 class Dummy(BaseModel):
     """Represents dummy (footbal player) on the line"""
 
-    def render_model(self, image):
-        cv2.drawMarker(image, self.footPosition, (0, 255, 0))
-        cv2.rectangle(image, self.position, (self.position[0] + 3, self.position[1] + 3), (0, 255, 0), 3)
+    def render_model(self, drawer):
+        drawer.draw_marker(self.footPosition, (0, 255, 0))
+        drawer.draw_circle(self.position, 5, (0, 255, 0), -1)
 
     def __init__(self, position, playerIndex, lineIndex, footPosition, player):
         super().__init__(position)
