@@ -1,6 +1,7 @@
 from drawer import Drawer
 import numpy as np
 import cv2
+from ring_buffer import RingBuffer
 
 class Game(object):
     """Simulates the game and evaluates it"""
@@ -10,6 +11,7 @@ class Game(object):
         self.fps = fps
         self.frameCount = frameCount
         self.score = [0, 0]
+        self.touchBuffer = []
 
     def processFrame(self, currentTime, frameNumber, ball, players, image, goal, heatmap, touch):
         output = Drawer(image)
@@ -35,10 +37,15 @@ class Game(object):
         #     cv2.line(playground, (options['PlayGround'][0][0] + point, 0),
         #              (options['PlayGround'][0][0] + point, height), (0, 0, 255))
 
-        output.show()
-
         if heatmap is not None:
             Drawer(heatmap, "Ball heat map").show()
 
         if touch is not None and touch[0]:
-            output.draw_text("TOUCH - playerId: " + str(touch[1]), (0, 0), size=2)
+            self.touchBuffer.insert(0, touch[1])
+            if len(self.touchBuffer) > 5:
+                self.touchBuffer.pop()
+
+        for i, touch in enumerate(self.touchBuffer):
+            output.draw_text("TOUCH - playerId: " + str(touch), (0, i * 16), size=0.6)
+
+        output.show()

@@ -15,6 +15,9 @@ class RingBuffer:
 
     def extend(self, x):
         "adds array x to ring buffer"
+        if type(x) is not np.array:
+            x = np.array(x)
+
         x_index = (self.index + np.arange(x.size)) % self.data.size
         self.data[x_index] = x
         self.index = x_index[-1] + 1
