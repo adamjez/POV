@@ -30,6 +30,11 @@ class Game(object):
 
         output.draw_text("{0:.2f}".format(currentTime / 1000) + "|" + str(frameNumber), (0, height - 290), size=0.6)
 
+        # height, width, channels = image.shape
+        # for point in LinePositions:
+        #     cv2.line(playground, (options['PlayGround'][0][0] + point, 0),
+        #              (options['PlayGround'][0][0] + point, height), (0, 0, 255))
+
         output.show()
 
         if heatmap is not None:

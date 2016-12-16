@@ -1,29 +1,27 @@
 import sys
+
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
-import matplotlib.pyplot as plt
 
 import models
 
-# Bigger value more feet detection with more false alarams
-FEET_DETECTION_TOLERANCE = 2000
-
 
 class DetectPlayers:
-    def __init__(self, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount,
-                 distanceBetweenDummys):
-        self.linesPosition = linesPosition
-        self.linesWidth = linesWidth
-        self.player1Color = player1Color
-        self.player2Color = player2Color
-        self.tolerance = tolerance
-        self.lineBelongs = lineBelongs
-        self.playersCount = playersCount
-        self.distanceBetweenDummys = distanceBetweenDummys
-        self.dummyHeight = 40
-        self.stripWidth = 75
-        self.stripHeight = 10
+    def __init__(self, options):
+        self.feetDetectionTolerance = options['Dummy']['FeetDetectionTolerance']
+        self.linesPosition = options['Lines']['XPos']
+        self.linesWidth = options['Lines']['Width']
+        self.player1Color = options['Players']['Player1Color']
+        self.player2Color = options['Players']['Player2Color']
+        self.tolerance = options['Dummy']['ColorTolerance']
+        self.lineBelongs = options['Lines']['Belongs']
+        self.playersCount = options['Players']['Count']
+        self.distanceBetweenDummys = options['Dummy']['DistanceBetween']
+        self.dummyHeight = options['Dummy']['Height']
+        self.stripWidth = options['Dummy']['Strip'][0]
+        self.stripHeight = options['Dummy']['Strip'][1]
         self.kernel3x3 = np.ones((3, 3), np.uint8)
 
     def detect(self, image):
@@ -105,7 +103,7 @@ class DetectPlayers:
 
         index = self.stripWidth
         i = 0
-        tolerance = len(strips) * FEET_DETECTION_TOLERANCE
+        tolerance = len(strips) * self.feetDetectionTolerance
         for x in colorValues:
             # Magic constnat?  Yes, change it if detection of feet doesn't
             # work, but be carefoul it can damage your computer
