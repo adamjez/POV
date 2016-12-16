@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import models
 
 # Bigger value more feet detection with more false alarams
-FEET_DETECTION_TOLERANCE = 3000
+FEET_DETECTION_TOLERANCE = 2000
 
 
 class DetectPlayers:
@@ -24,6 +24,8 @@ class DetectPlayers:
         self.dummyHeight = 40
         self.stripWidth = 75
         self.stripHeight = 10
+        self.kernel3x3 = np.ones((3, 3), np.uint8)
+
 
     def detect(self, image):
         # return []  # TODO comment when needed!
@@ -60,11 +62,11 @@ class DetectPlayers:
 
                 dummyStrips.append(strip)
                 cv2.circle(image, (linePos, index), 5, (255, 0, 0), 10)
-            # cv2.imshow("test", image)
-            # cv2.waitKey()
 
             # (width, center) = self.computeDummyWidth(dummyStrips, currentPlayerColor)
-            (width, center) = self.computeDummyWidth(dummyStrips, currentPlayerColor)
+            if lineIndex == 0:
+                del dummyStrips[1]
+            (width, center) = self.computeDummyWidth(dummyStrips)
             playerIndex = 1
             for index in dummyIndexes:
                 dummys.append(
@@ -77,40 +79,34 @@ class DetectPlayers:
 
         return dummys
 
-    def computeDummyWidth(self, strips, playerColor):
-        colorValues = []
-        i = 0
-        for strip in strips:
-            gray = cv2.cvtColor(strip, cv2.COLOR_RGB2GRAY)
-            ret, gray = cv2.threshold(gray, 142, 255, 0, cv2.THRESH_MASK)
-            strips[i] = gray
-            # cv2.imshow("wtf", gray)
-            # cv2.waitKey()
-            # strips[i] = cv2.cvtColor(strip, cv2.COLOR_RGB2HSV)
-            i += 1
+    def prepareStrip(self, strip):
+        gray = cv2.cvtColor(strip, cv2.COLOR_RGB2GRAY)
+        ret, gray = cv2.threshold(gray, 155, 255, cv2.THRESH_BINARY_INV)
+        gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, self.kernel3x3)
+        return np.float32(gray);
 
-        playerColor = 255
+    def computeDummyWidth(self, strips):
+        strips = [self.prepareStrip(strip) for strip in strips]
 
-        for i in range(self.stripWidth * 2):
-            colorDiff = 0
-            for j in range(self.stripHeight):
-                for strip in strips:
-                    colorDiff += abs(strip[j, i] - 255)
-            colorValues.append(int(colorDiff))
 
-        colorValues = gaussian_filter(colorValues, sigma=1)
+        result = cv2.add(strips[0] , strips[1])
+        if len(strips) > 2:
+            result = cv2.add(result, strips[2])
 
-        # colorValues = colorValues / np.max(colorValues)
 
-        # plt.plot(range(0, len(colorValues)), colorValues)
-        # plt.show()
+        colorValues = np.sum(result, axis=0)
+        #colorValues = gaussian_filter(colorValues, sigma=1)
+
+        #plt.plot(range(0, len(colorValues)), colorValues)
+        #plt.show()
 
         index = self.stripWidth
         i = 0
+        tolerance = len(strips) * FEET_DETECTION_TOLERANCE
         for x in colorValues:
             # Magic constnat?  Yes, change it if detection of feet doesn't
             # work, but be carefoul it can damage your computer
-            if x < FEET_DETECTION_TOLERANCE and abs(i - self.stripWidth) > abs(index - self.stripWidth):
+            if x < tolerance and abs(i - self.stripWidth) > abs(index - self.stripWidth):
                 index = i
             i += 1
 

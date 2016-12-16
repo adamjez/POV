@@ -92,7 +92,7 @@ def processVideo(videoPath, is_looping):
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
         if ret is False: break
 
-        if frame_counter < 314:
+        if frame_counter < 350:
             frame_counter += 1
             currentTime += int(1 / fps * 1000)
             continue
