@@ -1,9 +1,7 @@
-import cv2
 import sys
-import numpy
+import cv2
 import core
 import game
-from drawer import Drawer
 
 ###################
 # Run Information #
@@ -15,24 +13,38 @@ from drawer import Drawer
 ####################
 # Field Parameters #
 ####################
-LeftTopCorner = (80, 25)  # Specifies corner for playground rectangle
-RightBottomCorner = (770, 515)  # Specifies corner for playground rectangle
-
-LinePositions = [105, 265, 425, 588]  # Specifies lines distance in pixels from left
-LinesWidth = 40  # Width of line in pixels for line segmentations
-
-LinesBelongs = [1, 2, 1, 2]  # Specifies who owns players on given line indexed from left to right
-PlayersCount = [3, 3, 3, 3]  # Specifies players count on each line indexed from left to right
-
-Player1Color = (180, 242, 140)  # Color of player 1 dummys in HSV
-Player2Color = (221, 211, 27)  # Color of player 2 dummys in HSV
-
-DistanceBetweenDummys = 145  # Specifies distance between dummys on lines
-DummyHeight = 46
-ColorTolerance = 40  # Tolerance for segmentation by color
 
 options = {
-    "BallHSV": [121, 193, 164],
+    "PlayGround": (
+        (80, 25),  # Specifies corner for playground rectangle
+        (770, 515)  # Specifies corner for playground rectangle
+    ),
+
+    'Lines': {
+        'XPos': [105, 265, 425, 588],  # Specifies lines distance in pixels from left
+        'Width': 40,  # Width of line in pixels for line segmentations
+        'Belongs': [1, 2, 1, 2]  # Specifies who owns players on given line indexed from left to right
+    },
+
+    'Players': {
+        'Count': [3, 3, 3, 3],  # Specifies players count on each line indexed from left to right
+        'Player1Color': (180, 242, 140),  # Color of player 1 dummys in HSV
+        'Player2Color': (221, 211, 27)  # Color of player 2 dummys in HSV
+    },
+
+    'Dummy': {
+        'FeetDetectionTolerance': 2000,  # Bigger value more feet detection with more false alarams
+        'DistanceBetween': 145,  # Specifies distance between dummys on lines
+        'Height': 40,
+        'ColorTolerance': 40,  # Tolerance for segmentation by color
+        'Strip': (75, 10)
+    },
+
+    'Ball': {
+        'HSV': [121, 193, 164],
+        'MinContourSize': 10,
+        'MinRadius': 9,
+    },
 
     "Goals": {
         "HistoryLength": 5,
@@ -42,17 +54,6 @@ options = {
         )
     },
 }
-
-
-def visualParameters(playground):
-    cv2.rectangle(playground, LeftTopCorner, RightBottomCorner, (255, 0, 0))
-
-    height, width, channels = playground.shape
-    for point in LinePositions:
-        cv2.line(playground, (LeftTopCorner[0] + point, 0), (LeftTopCorner[0] + point, height), (0, 0, 255))
-
-    for gate in options["GoalGates"]:
-        cv2.rectangle(playground, gate[0], gate[1], (0, 0, 255), 1)
 
 
 def reset_to_start(vidFile, frame_counter, frames_count):
@@ -74,16 +75,15 @@ def processVideo(videoPath, is_looping):
         print("capture stream not open")
         sys.exit(1)
 
-    preproc = core.preprocessor(LeftTopCorner, RightBottomCorner)
-    proc = core.processor(options, LinePositions, LinesWidth, Player1Color, Player2Color, ColorTolerance,
-                          LinesBelongs, PlayersCount, DistanceBetweenDummys)
-
     fps = vidFile.get(cv2.CAP_PROP_FPS)
     nFrames = int(vidFile.get(cv2.CAP_PROP_FRAME_COUNT))
     print("frame number: %s" % nFrames)
     print("FPS value: %s" % fps)
     print("size: %d x %d" % (vidFile.get(cv2.CAP_PROP_FRAME_WIDTH), vidFile.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     print("looping: %r" % is_looping)
+
+    preproc = core.preprocessor(options['PlayGround'])
+    proc = core.processor(options, fps)
     currentGame = game.Game(options, fps, nFrames)
 
     frame_counter = 0
@@ -95,7 +95,7 @@ def processVideo(videoPath, is_looping):
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
         if ret is False: break
 
-        # if frame_counter < 100:
+        # if frame_counter < 300:
         #     frame_counter += 1
         #     currentTime += int(1 / fps * 1000)
         #     continue
@@ -103,11 +103,9 @@ def processVideo(videoPath, is_looping):
         if is_looping and reset_to_start(vidFile, frame_counter, nFrames):
             frame_counter = 0
 
-        # visualParameters(frame)
-
         playground = preproc.run(frame)
-        gameFrame = proc.run(playground)
-        currentGame.processFrame(gameFrame, currentTime, frame_counter)
+        ball, players, image, goal, heatmap = proc.run(playground)
+        currentGame.processFrame(currentTime, frame_counter, ball, players, image, goal, heatmap)
 
         break_type = key_detected()
         if break_type is True:
@@ -141,14 +139,13 @@ def key_detected():
 def processImage(imagePath):
     frame = cv2.imread(imagePath)
 
-    preproc = core.preprocessor(LeftTopCorner, RightBottomCorner)
-    proc = core.processor(LinePositions, LinesWidth, Player1Color, Player2Color, ColorTolerance,
-                          LinesBelongs, PlayersCount, DistanceBetweenDummys)
+    preproc = core.preprocessor(options['PlayGround'])
+    proc = core.processor(options)
 
     playground = preproc.run(frame)
     proc.run(playground)
 
-    visualParameters(frame)
+    # visualParameters(frame)
     cv2.imshow("frameWindow", frame)
     # cv2.waitKey(int(1/fps*1000)) # time to wait between frames, in mSec
     cv2.waitKey()

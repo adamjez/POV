@@ -43,6 +43,9 @@ class Ball(BaseModel):
         self.radius = radius
         self.contour = contour
 
+    def __str__(self):
+        return "(" + str(self.position) + " , " + str(self.BALL_KNOWN_RADIUS) + ")"
+
 
 class Dummy(BaseModel):
     """Represents dummy (footbal player) on the line"""

@@ -2,29 +2,31 @@ import game
 from detector.detect_ball import DetectBall
 from detector.detect_goal import DetectGoal
 from detector.detect_players import DetectPlayers
+from detector.detect_ball_heatmap import DetectBallHeatMap
 
 
 class processor:
-    def __init__(self, options, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs,
-                 playersCount,
-                 distanceBetweenDummys):
-        self.detect_players = DetectPlayers(linesPosition, linesWidth, player1Color, player2Color, tolerance,
-                                            lineBelongs, playersCount, distanceBetweenDummys)
+    def __init__(self, options, fps):
+        self.detect_players = DetectPlayers(options)
         self.detect_ball = DetectBall(options)
         self.detect_goal = DetectGoal(options)
+        self.detect_ball_heatmap = DetectBallHeatMap(options, fps)
 
     def run(self, image):
         players = self.detect_players.detect(image)
         ball = self.detect_ball.detect(image)
         goal = self.detect_goal.detect(image, ball)
-        return game.GameFrame(ball, players, image, goal)
+        heatmap = self.detect_ball_heatmap.detect(image, ball)
+
+        return ball, players, image, goal, heatmap
 
 
 class preprocessor:
-    def __init__(self, point1, point2):
-        self.point1 = point1
-        self.point2 = point2
+    def __init__(self, play_ground):
+        self.play_ground = play_ground
 
     def run(self, image):
-        playground = image[self.point1[1]:self.point2[1], self.point1[0]:self.point2[0]].copy()
+        playground = image[
+                     self.play_ground[0][1]:self.play_ground[1][1],
+                     self.play_ground[0][0]:self.play_ground[1][0]].copy()
         return playground

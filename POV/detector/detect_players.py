@@ -1,31 +1,28 @@
 import sys
+
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage.filters import gaussian_filter
-import matplotlib.pyplot as plt
 
 import models
 
-# Bigger value more feet detection with more false alarams
-FEET_DETECTION_TOLERANCE = 2000
-
 
 class DetectPlayers:
-    def __init__(self, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount,
-                 distanceBetweenDummys):
-        self.linesPosition = linesPosition
-        self.linesWidth = linesWidth
-        self.player1Color = player1Color
-        self.player2Color = player2Color
-        self.tolerance = tolerance
-        self.lineBelongs = lineBelongs
-        self.playersCount = playersCount
-        self.distanceBetweenDummys = distanceBetweenDummys
-        self.dummyHeight = 40
-        self.stripWidth = 75
-        self.stripHeight = 10
+    def __init__(self, options):
+        self.feetDetectionTolerance = options['Dummy']['FeetDetectionTolerance']
+        self.linesPosition = options['Lines']['XPos']
+        self.linesWidth = options['Lines']['Width']
+        self.player1Color = options['Players']['Player1Color']
+        self.player2Color = options['Players']['Player2Color']
+        self.tolerance = options['Dummy']['ColorTolerance']
+        self.lineBelongs = options['Lines']['Belongs']
+        self.playersCount = options['Players']['Count']
+        self.distanceBetweenDummys = options['Dummy']['DistanceBetween']
+        self.dummyHeight = options['Dummy']['Height']
+        self.stripWidth = options['Dummy']['Strip'][0]
+        self.stripHeight = options['Dummy']['Strip'][1]
         self.kernel3x3 = np.ones((3, 3), np.uint8)
-
 
     def detect(self, image):
         # return []  # TODO comment when needed!
@@ -44,21 +41,27 @@ class DetectPlayers:
                                              currentPlayerColor,
                                              playersCount,
                                              True if lineIndex % 3 == 0 else False)
-            dummyIndexes.sort()
 
             dummyStrips = []
-            for index in dummyIndexes:
+            for dummy_pos in dummyIndexes:
                 # cv2.rectangle(image, (linePos - self.stripWidth, index - self.stripHeight),
                 #               (linePos + self.stripWidth, index + self.stripHeight), (255, 0, 0))
 
-                if index - self.stripHeight < 0:
-                    strip = image[0: self.stripHeight, linePos - self.stripWidth:linePos + self.stripWidth].copy()
-                elif index + self.stripHeight >= height:
-                    strip = image[height - self.stripHeight - 1: height - 1,
-                            linePos - self.stripWidth:linePos + self.stripWidth].copy()
+                if dummy_pos - self.stripHeight < 0:
+                    strip = image[
+                            0: 2 * self.stripHeight,  # TODO changed this but is it ok?
+                            linePos - self.stripWidth:linePos + self.stripWidth
+                            ].copy()
+                elif dummy_pos + self.stripHeight >= height:
+                    strip = image[
+                            height - self.stripHeight - 1: height - 1,
+                            linePos - self.stripWidth:linePos + self.stripWidth
+                            ].copy()
                 else:
-                    strip = image[index - self.stripHeight: index + self.stripHeight,
-                            linePos - self.stripWidth:linePos + self.stripWidth].copy()
+                    strip = image[
+                            dummy_pos - self.stripHeight: dummy_pos + self.stripHeight,
+                            linePos - self.stripWidth:linePos + self.stripWidth
+                            ].copy()
 
                 dummyStrips.append(strip)
                 # cv2.circle(image, (linePos, index), 5, (255, 0, 0), 10)
@@ -68,9 +71,9 @@ class DetectPlayers:
                 del dummyStrips[1]
             (width, center) = self.computeDummyWidth(dummyStrips)
             playerIndex = 1
-            for index in dummyIndexes:
+            for dummy_pos in dummyIndexes:
                 dummys.append(
-                    models.Dummy((linePos, index), playerIndex, lineIndex, (linePos + center, index), belongs))
+                    models.Dummy((linePos, dummy_pos), playerIndex, lineIndex, (linePos + center, dummy_pos), belongs))
                 # cv2.rectangle(image, (linePos + center - int(width / 2), index - int(self.dummyHeight / 2)),
                 #               (linePos + center + int(width / 2), index + int(self.dummyHeight / 2)), (255, 0, 0))
                 playerIndex += 1
@@ -88,21 +91,19 @@ class DetectPlayers:
     def computeDummyWidth(self, strips):
         strips = [self.prepareStrip(strip) for strip in strips]
 
-
-        result = cv2.add(strips[0] , strips[1])
+        result = cv2.add(strips[0], strips[1])
         if len(strips) > 2:
             result = cv2.add(result, strips[2])
 
-
         colorValues = np.sum(result, axis=0)
-        #colorValues = gaussian_filter(colorValues, sigma=1)
+        # colorValues = gaussian_filter(colorValues, sigma=1)
 
-        #plt.plot(range(0, len(colorValues)), colorValues)
-        #plt.show()
+        # plt.plot(range(0, len(colorValues)), colorValues)
+        # plt.show()
 
         index = self.stripWidth
         i = 0
-        tolerance = len(strips) * FEET_DETECTION_TOLERANCE
+        tolerance = len(strips) * self.feetDetectionTolerance
         for x in colorValues:
             # Magic constnat?  Yes, change it if detection of feet doesn't
             # work, but be carefoul it can damage your computer
@@ -214,7 +215,10 @@ class DetectPlayers:
             # If distance between these 2 players is greater then distance
             # between dummys and magic constant so we can find middle one
             index = int((rowIndexes[0] + rowIndexes[1]) / 2)
-            rowIndexes.append(index)
+            # rowIndexes.append(index)
+            rowIndexes.insert(1, index)
+
+        # rowIndexes.sort()
 
         return rowIndexes
 

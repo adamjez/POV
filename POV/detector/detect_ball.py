@@ -7,20 +7,6 @@ DEBUG = False
 
 
 class DetectBall:
-    MIN_CONTOUR_SIZE = 10
-    MIN_CONTOUR_RADIUS = 9
-
-    # def check_keyboard(self):
-    #     ch = 0xFF & cv2.waitKey(1)
-    #     if ch == ord('i'):
-    #         self.ball_low_corr += np.ones([3], dtype=np.int_)
-    #     elif ch == ord('k'):
-    #         self.ball_low_corr -= np.ones([3], dtype=np.int_)
-    #     elif ch == ord('o'):
-    #         self.ball_up_corr += np.ones([3], dtype=np.int_)
-    #     elif ch == ord('l'):
-    #         self.ball_up_corr -= np.ones([3], dtype=np.int_)
-
     def create_template(self):
         size = models.Ball.BALL_KNOWN_RADIUS
         template = np.zeros([2 * size, 2 * size], np.uint8)
@@ -30,7 +16,8 @@ class DetectBall:
         return circle_contours[0]
 
     def __init__(self, options):
-        self.ball_hsv_color = options["BallHSV"]
+        self.ball_options = options['Ball']
+        self.ball_hsv_color = self.ball_options['HSV']
         self.ball_low_corr = np.array([50, 50, 50])  # TODO maybe tweak the corrections
         self.ball_up_corr = np.array([20, 20, 20])
         self.ball_template = self.create_template()
@@ -100,7 +87,7 @@ class DetectBall:
             if DEBUG:
                 mask_visual.draw_contour(cnt)
 
-            if cnt.size < self.MIN_CONTOUR_SIZE:
+            if cnt.size < self.ball_options['MinContourSize']:
                 continue
 
             # TODO better filtering (based on this? http://layer0.authentise.com/detecting-circular-shapes-using-contours.html )
@@ -109,7 +96,7 @@ class DetectBall:
                 mask_visual.draw_contour(cnt, (255, 0, 0))
 
             (x, y), radius = cv2.minEnclosingCircle(cnt)
-            if radius < self.MIN_CONTOUR_RADIUS:
+            if radius < self.ball_options['MinRadius']:
                 continue
 
             center = (int(x), int(y))
