@@ -95,10 +95,10 @@ def processVideo(videoPath, is_looping):
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
         if ret is False: break
 
-        # if frame_counter < 100:
-        #     frame_counter += 1
-        #     currentTime += int(1 / fps * 1000)
-        #     continue
+        if frame_counter < 300:
+            frame_counter += 1
+            currentTime += int(1 / fps * 1000)
+            continue
 
         if is_looping and reset_to_start(vidFile, frame_counter, nFrames):
             frame_counter = 0
@@ -106,8 +106,8 @@ def processVideo(videoPath, is_looping):
         # visualParameters(frame)
 
         playground = preproc.run(frame)
-        gameFrame = proc.run(playground)
-        currentGame.processFrame(gameFrame, currentTime, frame_counter)
+        ball, players, image, goal, heatmap = proc.run(playground)
+        currentGame.processFrame(currentTime, frame_counter, ball, players, image, goal, heatmap)
 
         break_type = key_detected()
         if break_type is True:

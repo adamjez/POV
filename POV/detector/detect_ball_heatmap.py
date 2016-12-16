@@ -11,10 +11,11 @@ class DetectBallHeatMap:
         if self.heatmap is None:
             self.heatmap = np.zeros(image.shape)
 
-        if ball.position == ball.INVALID_POSITION: return
+        if ball.position == ball.INVALID_POSITION:
+            return
 
-        # cv2.circle(self.heatmap, ball.position, ball.BALL_KNOWN_RADIUS, (255, 255, 255), -1)
+        actual_frame = np.zeros(image.shape)
+        cv2.circle(actual_frame, ball.position, ball.BALL_KNOWN_RADIUS, (0.1, 0.1, 0.1), -1)
+        self.heatmap += actual_frame
 
-        self.heatmap[ball.position[1]:ball.position[1] + 10, ball.position[0]:ball.position[0] + 10] += (1, 1, 1)
-
-        cv2.imshow("map", self.heatmap)
+        return self.heatmap

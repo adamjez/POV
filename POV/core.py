@@ -20,7 +20,8 @@ class processor:
         ball = self.detect_ball.detect(image)
         goal = self.detect_goal.detect(image, ball)
         heatmap = self.detect_ball_heatmap.detect(image, ball)
-        return game.GameFrame(ball, players, image, goal)
+
+        return ball, players, image, goal, heatmap
 
 
 class preprocessor:
