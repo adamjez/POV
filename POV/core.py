@@ -6,11 +6,11 @@ from detector.detect_ball_heatmap import DetectBallHeatMap
 
 
 class processor:
-    def __init__(self, options):
+    def __init__(self, options, fps):
         self.detect_players = DetectPlayers(options)
         self.detect_ball = DetectBall(options)
         self.detect_goal = DetectGoal(options)
-        self.detect_ball_heatmap = DetectBallHeatMap(options)
+        self.detect_ball_heatmap = DetectBallHeatMap(options, fps)
 
     def run(self, image):
         players = self.detect_players.detect(image)

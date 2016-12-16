@@ -75,15 +75,15 @@ def processVideo(videoPath, is_looping):
         print("capture stream not open")
         sys.exit(1)
 
-    preproc = core.preprocessor(options['PlayGround'])
-    proc = core.processor(options)
-
     fps = vidFile.get(cv2.CAP_PROP_FPS)
     nFrames = int(vidFile.get(cv2.CAP_PROP_FRAME_COUNT))
     print("frame number: %s" % nFrames)
     print("FPS value: %s" % fps)
     print("size: %d x %d" % (vidFile.get(cv2.CAP_PROP_FRAME_WIDTH), vidFile.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     print("looping: %r" % is_looping)
+
+    preproc = core.preprocessor(options['PlayGround'])
+    proc = core.processor(options, fps)
     currentGame = game.Game(options, fps, nFrames)
 
     frame_counter = 0
@@ -95,10 +95,10 @@ def processVideo(videoPath, is_looping):
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
         if ret is False: break
 
-        if frame_counter < 300:
-            frame_counter += 1
-            currentTime += int(1 / fps * 1000)
-            continue
+        # if frame_counter < 300:
+        #     frame_counter += 1
+        #     currentTime += int(1 / fps * 1000)
+        #     continue
 
         if is_looping and reset_to_start(vidFile, frame_counter, nFrames):
             frame_counter = 0
@@ -140,11 +140,7 @@ def processImage(imagePath):
     frame = cv2.imread(imagePath)
 
     preproc = core.preprocessor(options['PlayGround'])
-    proc = core.processor(options, options['Lines']['XPos'], options['Lines']['Width'],
-                          options['Players']['Player1Color'],
-                          options['Players']['Player2Color'],
-                          options['Dummy']['ColorTolerance'],
-                          options['Lines']['Belongs'], options['Players']['Count'], options['Dummy']['DistanceBetween'])
+    proc = core.processor(options)
 
     playground = preproc.run(frame)
     proc.run(playground)

@@ -3,8 +3,9 @@ import cv2
 
 
 class DetectBallHeatMap:
-    def __init__(self, options):
+    def __init__(self, options, fps):
         self.options = options
+        self.inc_counter = [1 / fps, 1 / fps, 1 / fps]
         self.heatmap = None
 
     def detect(self, image, ball):
@@ -15,7 +16,7 @@ class DetectBallHeatMap:
             return
 
         actual_frame = np.zeros(image.shape)
-        cv2.circle(actual_frame, ball.position, ball.BALL_KNOWN_RADIUS, (0.1, 0.1, 0.1), -1)
+        cv2.circle(actual_frame, ball.position, ball.BALL_KNOWN_RADIUS, self.inc_counter, -1)
         self.heatmap += actual_frame
 
         return self.heatmap
