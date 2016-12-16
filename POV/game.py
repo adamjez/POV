@@ -2,6 +2,7 @@ from drawer import Drawer
 import numpy as np
 import cv2
 from ring_buffer import RingBuffer
+from event_logger import EventLogger
 
 class Game(object):
     """Simulates the game and evaluates it"""
@@ -12,6 +13,7 @@ class Game(object):
         self.frameCount = frameCount
         self.score = [0, 0]
         self.touchBuffer = []
+        self.eventLogger = EventLogger("result.txt")
 
     def processFrame(self, currentTime, frameNumber, ball, players, image, goal, heatmap, touch):
         output = Drawer(image)
@@ -40,7 +42,8 @@ class Game(object):
         if heatmap is not None:
             Drawer(heatmap, "Ball heat map").show()
 
-        if touch is not None and touch[0]:
+        if touch[0]:
+            self.eventLogger.addTouch(currentTime, touch[1])
             self.touchBuffer.insert(0, touch[1])
             if len(self.touchBuffer) > 5:
                 self.touchBuffer.pop()
@@ -49,3 +52,6 @@ class Game(object):
             output.draw_text("TOUCH - playerId: " + str(touch), (0, i * 16), size=0.6)
 
         output.show()
+
+    def gameEnd(self):
+        self.eventLogger.save()

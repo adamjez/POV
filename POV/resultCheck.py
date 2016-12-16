@@ -6,7 +6,7 @@ from datetime import datetime
 ####################
 # Every line is one EVENT with space separated informations:
 # 1. Line stars with time of event in format: %H:%M:%S.%f
-# 2. Type of event, one of these values: GOL, TOUCH
+# 2. Type of event, one of these values: GOAL, TOUCH
 # 3a. For GOL event there will be id of player: 1 or 2
 # 3b. For TOUCH event there will be line id indexed from left and id of dummy indexed from top separeted with comma, for example: 1,3  
 #     which mean that dummy on first line and third from top touched the ball

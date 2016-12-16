@@ -118,6 +118,7 @@ def processVideo(videoPath, is_looping):
         currentTime += int(1 / fps * 1000)  # in mSec
         frame_counter += 1
 
+    currentGame.gameEnd()
     vidFile.release()
     cv2.destroyAllWindows()
 
