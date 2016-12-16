@@ -48,8 +48,8 @@ class DetectPlayers:
 
             dummyStrips = []
             for index in dummyIndexes:
-                cv2.rectangle(image, (linePos - self.stripWidth, index - self.stripHeight),
-                              (linePos + self.stripWidth, index + self.stripHeight), (255, 0, 0))
+                # cv2.rectangle(image, (linePos - self.stripWidth, index - self.stripHeight),
+                #               (linePos + self.stripWidth, index + self.stripHeight), (255, 0, 0))
 
                 if index - self.stripHeight < 0:
                     strip = image[0: self.stripHeight, linePos - self.stripWidth:linePos + self.stripWidth].copy()
@@ -61,7 +61,7 @@ class DetectPlayers:
                             linePos - self.stripWidth:linePos + self.stripWidth].copy()
 
                 dummyStrips.append(strip)
-                cv2.circle(image, (linePos, index), 5, (255, 0, 0), 10)
+                # cv2.circle(image, (linePos, index), 5, (255, 0, 0), 10)
 
             # (width, center) = self.computeDummyWidth(dummyStrips, currentPlayerColor)
             if lineIndex == 0:
@@ -71,8 +71,8 @@ class DetectPlayers:
             for index in dummyIndexes:
                 dummys.append(
                     models.Dummy((linePos, index), playerIndex, lineIndex, (linePos + center, index), belongs))
-                cv2.rectangle(image, (linePos + center - int(width / 2), index - int(self.dummyHeight / 2)),
-                              (linePos + center + int(width / 2), index + int(self.dummyHeight / 2)), (255, 0, 0))
+                # cv2.rectangle(image, (linePos + center - int(width / 2), index - int(self.dummyHeight / 2)),
+                #               (linePos + center + int(width / 2), index + int(self.dummyHeight / 2)), (255, 0, 0))
                 playerIndex += 1
 
             lineIndex += 1

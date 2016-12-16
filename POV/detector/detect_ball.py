@@ -49,7 +49,7 @@ class DetectBall:
 
     def _prepare_image(self, image):
         hsv = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2HSV)
-        hsv = cv2.medianBlur(hsv, 5)
+        hsv = cv2.medianBlur(hsv, 5)  # TODO might not be necessary
         return hsv
 
     def _get_threshold_mask(self, hsv):

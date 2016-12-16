@@ -1,5 +1,4 @@
 import cv2
-import models
 import numpy as np
 
 
@@ -44,8 +43,8 @@ class Drawer:
         cv2.drawContours(self.image, contour, -1, color, thickness)
         return self
 
-    def draw_rect(self, pt1, pt2, color=(0, 0, 255), thickness=1):
-        cv2.rectangle(self.image, pt1, pt2, color, thickness)
+    def draw_rect(self, points, color=(0, 0, 255), thickness=1):
+        cv2.rectangle(self.image, points[0], points[1], color, thickness)
         return self
 
     def draw_marker(self, point, color=(255, 0, 0)):
@@ -58,7 +57,7 @@ class Drawer:
         :param model: models.BaseModel
         :return:
         """
-        model.render(self.image)
+        model.render(self)
         return self
 
     def show(self):

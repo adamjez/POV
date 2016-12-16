@@ -5,7 +5,8 @@ from detector.detect_players import DetectPlayers
 
 
 class processor:
-    def __init__(self, options, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs, playersCount,
+    def __init__(self, options, linesPosition, linesWidth, player1Color, player2Color, tolerance, lineBelongs,
+                 playersCount,
                  distanceBetweenDummys):
         self.detect_players = DetectPlayers(linesPosition, linesWidth, player1Color, player2Color, tolerance,
                                             lineBelongs, playersCount, distanceBetweenDummys)
