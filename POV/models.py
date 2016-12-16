@@ -28,8 +28,10 @@ class BaseModel(ABC):
 
 
 class Ball(BaseModel):
+    """
+    Represents ball in playground
+    """
     BALL_KNOWN_RADIUS = 22
-    """Represents ball in playground"""
 
     def render_model(self, image):
         cv2.rectangle(image, self.position, (self.position[0] + 2, self.position[1] + 2), (255, 0, 0), 3)

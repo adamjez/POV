@@ -34,10 +34,13 @@ ColorTolerance = 40  # Tolerance for segmentation by color
 options = {
     "BallHSV": [121, 193, 164],
 
-    "GoalGates": [
-        [(86, 211), (97, 341)],
-        [(755, 208), (765, 340)]
-    ],
+    "Goals": {
+        "HistoryLength": 5,
+        "Gates": (
+            [(0, 193), (15, 313)],
+            [(675, 190), (690, 310)]
+        )
+    },
 }
 
 
@@ -81,7 +84,7 @@ def processVideo(videoPath, is_looping):
     print("FPS value: %s" % fps)
     print("size: %d x %d" % (vidFile.get(cv2.CAP_PROP_FRAME_WIDTH), vidFile.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     print("looping: %r" % is_looping)
-    currentGame = game.Game(fps, nFrames)
+    currentGame = game.Game(options, fps, nFrames)
 
     frame_counter = 0
     currentTime = 0
@@ -92,10 +95,10 @@ def processVideo(videoPath, is_looping):
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
         if ret is False: break
 
-        if frame_counter < 350:
-            frame_counter += 1
-            currentTime += int(1 / fps * 1000)
-            continue
+        # if frame_counter < 100:
+        #     frame_counter += 1
+        #     currentTime += int(1 / fps * 1000)
+        #     continue
 
         if is_looping and reset_to_start(vidFile, frame_counter, nFrames):
             frame_counter = 0
@@ -168,7 +171,12 @@ if __name__ == "__main__":
     if inputType == "-i":
         processImage(sys.argv[2])
     elif inputType == "-v":
-        processVideo(sys.argv[2], isLooping)
+        try:
+            processVideo(sys.argv[2], isLooping)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            print("TODO show_some_analysis")
     else:
         print("Unkown parameter given")
         sys.exit(1)
