@@ -4,6 +4,7 @@ import cv2
 from ring_buffer import RingBuffer
 from event_logger import EventLogger
 
+
 class Game(object):
     """Simulates the game and evaluates it"""
 
@@ -32,7 +33,8 @@ class Game(object):
 
         width, height, depth = image.shape
 
-        output.draw_text("{0:.2f}".format(currentTime / 1000) + "|" + str(frameNumber), (0, height - 290), size=0.6)
+        output.draw_text("{0:.2f}s".format(currentTime / 1000) + "|" + str(frameNumber), (0, height - 290),
+                         size=0.6)
 
         # height, width, channels = image.shape
         # for point in LinePositions:
