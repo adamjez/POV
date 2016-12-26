@@ -7,13 +7,13 @@ from event_logger import EventLogger
 class Game(object):
     """Simulates the game and evaluates it"""
 
-    def __init__(self, options, fps, frameCount):
+    def __init__(self, options, videoName, fps, frameCount):
         self.options = options
         self.fps = fps
         self.frameCount = frameCount
         self.score = [0, 0]
         self.touchBuffer = []
-        self.eventLogger = EventLogger("result.txt")
+        self.eventLogger = EventLogger(videoName + "_result.txt")
         self.shooter_index = None
 
     def processFrame(self, currentTime, frameNumber, ball, players, image, goal, heatmap, touch):

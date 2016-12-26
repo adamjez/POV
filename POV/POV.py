@@ -89,7 +89,7 @@ def processVideo(videoPath, is_looping):
 
     preproc = core.preprocessor(options['PlayGround'])
     proc = core.processor(options, fps)
-    currentGame = game.Game(options, fps, nFrames)
+    currentGame = game.Game(options, videoPath, fps, nFrames)
 
     frame_counter = 0
     currentTime = 0
@@ -170,12 +170,13 @@ if __name__ == "__main__":
 
     isLooping = args_count >= 4 and sys.argv[3] == "-l"
     inputType = sys.argv[1]
+    inputName = sys.argv[2]
 
     if inputType == "-i":
-        processImage(sys.argv[2])
+        processImage(inputName)
     elif inputType == "-v":
         try:
-            processVideo(sys.argv[2], isLooping)
+            processVideo(inputName, isLooping)
         except KeyboardInterrupt:
             pass
         finally:
