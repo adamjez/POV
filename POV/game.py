@@ -1,7 +1,6 @@
-from drawer import Drawer
 import numpy as np
-import cv2
-from ring_buffer import RingBuffer
+
+from drawer import Drawer
 from event_logger import EventLogger
 
 
@@ -28,9 +27,9 @@ class Game(object):
             output.draw_model(player)
 
         if np.any(goal):
-            shooterIndex = self.touchBuffer[-1].get_player_index()
+            shooterIndex = self.touchBuffer[0].get_player_index()
             # TODO calculate which index it is may be better
-            self.shooter_index = shooterIndex[0] * self.options['Players']['Count'][0] + shooterIndex[1]
+            self.shooter_index = shooterIndex[0] * self.options['Players']['Count'][0] + shooterIndex[1] - 1
             self.eventLogger.addGoal(currentTime, shooterIndex)
 
         if self.shooter_index is not None:
@@ -55,10 +54,10 @@ class Game(object):
         #     Drawer(heatmap, "Ball heat map").show()
 
         if touch is not None:
-            output.draw_circle(touch.get_position(), 40, (0,255,255), 5)
-            self.eventLogger.addTouch(currentTime, touch)
+            output.draw_circle(touch.get_position(), 40, (0, 255, 255), 5)
+            self.eventLogger.addTouch(currentTime, touch.get_player_index())
             self.touchBuffer.insert(0, touch)
-            if len(self.touchBuffer) > 5:
+            if len(self.touchBuffer) > self.options['Touch']['BufferSize']:
                 self.touchBuffer.pop()
 
         for i, touch in enumerate(self.touchBuffer):

@@ -5,7 +5,7 @@ class DetectTouch:
     def __init__(self, options):
         self.options = options["Touch"]
         self.detectionTolerance = self.options["ToleranceDetection"]
-        self.lastPlayerTouch = None
+        self.lastPlayerIdtouch = None
 
     def euklidien_distance(self, position1, position2):
         return np.sqrt((position1[0] - position2[0]) ** 2 + (position1[1] - position2[1]) ** 2)
