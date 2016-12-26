@@ -15,6 +15,7 @@ class Game(object):
         self.score = [0, 0]
         self.touchBuffer = []
         self.eventLogger = EventLogger("result.txt")
+        self.shooter_index = None
 
     def processFrame(self, currentTime, frameNumber, ball, players, image, goal, heatmap, touch):
         output = Drawer(image)
@@ -25,6 +26,15 @@ class Game(object):
 
         for player in players:
             output.draw_model(player)
+
+        if np.any(goal):
+            shooterIndex = self.touchBuffer[-1].get_player_index()
+            # TODO calculate which index it is may be better
+            self.shooter_index = shooterIndex[0] * self.options['Players']['Count'][0] + shooterIndex[1]
+            self.eventLogger.addGoal(currentTime, shooterIndex)
+
+        if self.shooter_index is not None:
+            output.draw_circle(players[self.shooter_index].get_position(), 20)
 
         self.score = np.add(self.score, goal)
 
@@ -41,17 +51,18 @@ class Game(object):
         #     cv2.line(playground, (options['PlayGround'][0][0] + point, 0),
         #              (options['PlayGround'][0][0] + point, height), (0, 0, 255))
 
-        if heatmap is not None:
-            Drawer(heatmap, "Ball heat map").show()
+        # if heatmap is not None:
+        #     Drawer(heatmap, "Ball heat map").show()
 
-        if touch[0]:
-            self.eventLogger.addTouch(currentTime, touch[1])
-            self.touchBuffer.insert(0, touch[1])
+        if touch is not None:
+            output.draw_circle(touch.get_position(), 40, (0,255,255), 5)
+            self.eventLogger.addTouch(currentTime, touch)
+            self.touchBuffer.insert(0, touch)
             if len(self.touchBuffer) > 5:
                 self.touchBuffer.pop()
 
         for i, touch in enumerate(self.touchBuffer):
-            output.draw_text("TOUCH - playerId: " + str(touch), (0, i * 16), size=0.6)
+            output.draw_text("TOUCH - playerId: " + str(touch.get_player_index()), (0, i * 16), size=0.6)
 
         output.show()
 
