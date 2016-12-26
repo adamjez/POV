@@ -9,7 +9,7 @@ class EventLogger:
     def save(self):
         with open(self.filename, 'w') as file:
             for event in self.events:
-                file.write(event)
+                file.write(event + '\n')
 
     def addEvent(self, time, eventType, description):
         # Python implicitly add 1 hear in from timestamp 
@@ -18,7 +18,8 @@ class EventLogger:
         self.events.append(event)
 
     def addTouch(self, time, dummyId):
-        self.addEvent(time, "TOUCH", str(dummyId))
+        # We internally index lines from 0 index but in result script there is indexed from 1
+        self.addEvent(time, "TOUCH", str(dummyId[0] + 1) + ',' + str(dummyId[1]))
 
     def addGoal(self, time, playerId):
         self.addEvent(time, "GOAL", str(playerId))

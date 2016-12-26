@@ -247,3 +247,4 @@ ModelManifest.xml
 *.pyo
 
 .idea/*
+/Samples/result.txt

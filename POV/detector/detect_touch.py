@@ -24,6 +24,6 @@ class DetectTouch:
         closestPlayer = closestPlayers[0]
         if closestPlayer[0] < self.detectionTolerance and self.lastPlayerIdtouch != closestPlayer[1].get_player_index():
             self.lastPlayerIdtouch = closestPlayer[1].get_player_index()
-            return (True, self.lastPlayerIdtouch)
+            return (True, closestPlayer[1])
 
         return (False, )

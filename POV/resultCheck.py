@@ -12,7 +12,7 @@ from datetime import datetime
 #     which mean that dummy on first line and third from top touched the ball
 # Example: sample_output.txt
 
-TIME_TOLERANCE = 500 # Tolerance in ms for same events
+TIME_TOLERANCE = 1000 # Tolerance in ms for same events
 
 class resultCheck(object):
     """description of class"""
@@ -49,8 +49,10 @@ class resultCheck(object):
                         elif id == id2:
                             print("Missinterpreted event: " + type + " missed id (" + time + ")")
                             print("Given id: " + id2 + " instead of: " + id2)
+                        elif type == type2:
+                            print("Bad ids for event type: " + type + " given: " + id2 + " instead of: " + id + " (" + str(time) + ")")
                         else:
-                            print("Different event at given time: " + type + " instead of " + type2 + " (" + time + ")")
+                            print("Different event at given time: " + type + " instead of " + type2 + " (" + str(time) + ")")
                     elif time2 < time:
                         self.addedEvents.append((time, type))
                         loadNewCorrectLine = False

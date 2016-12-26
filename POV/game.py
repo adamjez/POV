@@ -45,13 +45,13 @@ class Game(object):
             Drawer(heatmap, "Ball heat map").show()
 
         if touch[0]:
-            self.eventLogger.addTouch(currentTime, touch[1])
+            self.eventLogger.addTouch(currentTime, touch[1].get_player_index())
             self.touchBuffer.insert(0, touch[1])
             if len(self.touchBuffer) > 5:
                 self.touchBuffer.pop()
 
         for i, touch in enumerate(self.touchBuffer):
-            output.draw_text("TOUCH - playerId: " + str(touch), (0, i * 16), size=0.6)
+            output.draw_text("TOUCH - playerId: " + str(touch.get_player_index()), (0, i * 16), size=0.6)
 
         output.show()
 
