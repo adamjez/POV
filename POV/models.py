@@ -26,6 +26,9 @@ class BaseModel(ABC):
     def is_visible(self):
         return self.position != self.INVALID_POSITION
 
+    def get_position(self):
+        return self.position
+
 
 class Ball(BaseModel):
     """
@@ -46,8 +49,6 @@ class Ball(BaseModel):
     def __str__(self):
         return "(" + str(self.position) + " , " + str(self.BALL_KNOWN_RADIUS) + ")"
 
-    def get_position(self):
-        return self.position
 
 class Dummy(BaseModel):
     """Represents dummy (footbal player) on the line"""
@@ -68,3 +69,9 @@ class Dummy(BaseModel):
 
     def get_player_index(self):
         return self.playerIndex
+
+    def __eq__(self, other):
+        if other is not Dummy:
+            return False
+        else:
+            return self.playerIndex == other.playerIndex
