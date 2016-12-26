@@ -12,7 +12,15 @@ from datetime import datetime
 #     which mean that dummy on first line and third from top touched the ball
 # Example: sample_output.txt
 
-TIME_TOLERANCE = 1000 # Tolerance in ms for same events
+TIME_TOLERANCE = 1500 # Tolerance in ms for same events
+
+def millis_interval(start, end):
+    """start and end are datetime instances"""
+    diff = end - start
+    millis = diff.days * 24 * 60 * 60 * 1000
+    millis += diff.seconds * 1000
+    millis += diff.microseconds / 1000
+    return millis
 
 class resultCheck(object):
     """description of class"""
@@ -22,6 +30,9 @@ class resultCheck(object):
         self.missedEvents = []
         self.addedEvents = []
         self.correctEvents = []
+        self.badEvents = []
+        self.correctEventsCount = 0
+        self.scriptEventsCount = 0
              
 
     def run(self):
@@ -32,32 +43,41 @@ class resultCheck(object):
 
                 loadNewCorrectLine = True
                 loadNewScriptLine = True
-                while len(correctLines) > 0 and len(scriptLines) > 0:
-                    if loadNewScriptLine:
+                self.correctEventsCount = len(correctLines)
+                self.scriptEventsCount = len(scriptLines)
+                while len(correctLines) > 0 or len(scriptLines) > 0:
+                    if loadNewScriptLine and len(scriptLines) > 0:
                         (time2, type2, id2) = self.parseLine(scriptLines.pop(0))
-                    if loadNewCorrectLine:
+                    if loadNewCorrectLine and len(correctLines) > 0:
                         (time, type, id)= self.parseLine(correctLines.pop(0))
                     
                     loadNewCorrectLine = True
                     loadNewScriptLine = True
 
-                    deltaTime = time - time2
-                    if (deltaTime.microseconds / 1000) < TIME_TOLERANCE:
+                    deltaTime = abs(millis_interval(time, time2))
+    
+                    if deltaTime < TIME_TOLERANCE:
                         if type == type2 and id == id2:
                             self.correctEvents.append((type, deltaTime))
                             print("Correct event detected: " + type)
-                        elif id == id2:
-                            print("Missinterpreted event: " + type + " missed id (" + time + ")")
-                            print("Given id: " + id2 + " instead of: " + id2)
-                        elif type == type2:
-                            print("Bad ids for event type: " + type + " given: " + id2 + " instead of: " + id + " (" + str(time) + ")")
                         else:
-                            print("Different event at given time: " + type + " instead of " + type2 + " (" + str(time) + ")")
+                            if time2 < time:
+                                loadNewCorrectLine = False
+                            else:
+                                loadNewScriptLine = False
+
+                            self.badEvents.append((time, type))
+                            if id == id2:
+                                print("Missinterpreted event: " + type + " missed id (" + str(deltaTime) + ")")
+                            elif type == type2:
+                                print("Bad ids for event type: " + type + " given: " + id2 + " instead of: " + id + " (" + str(deltaTime) + ")")
+                            else:
+                                print("Different event at given time: " + type + " instead of " + type2 + " (" + str(deltaTime) + ")")
                     elif time2 < time:
                         self.addedEvents.append((time, type))
                         loadNewCorrectLine = False
 
-                    elif time < time2:
+                    else:
                         self.missedEvents.append((time, type))
                         loadNewScriptLine = False
 
@@ -79,11 +99,14 @@ class resultCheck(object):
         correctEventCount = len(self.correctEvents)
         timeDiff = 0
         if correctEventCount != 0:
-            timeDiff = sum([x[1].microseconds / 1000 for x in self.correctEvents]) / correctEventCount
+            timeDiff = sum([x[1] for x in self.correctEvents]) / correctEventCount
 
+        print("Events count: " + str(self.correctEventsCount) + " (correct) " + str(self.scriptEventsCount) + " (script result)")
         print("Correct events: " + str(correctEventCount) + " time differs: " + str(timeDiff) + " ms")
         print("Missed events: " + str(len(self.missedEvents)))
         print("Added events: " + str(len(self.addedEvents)))
+        print("Bad events: " + str(len(self.badEvents)))
+
 
     def parseLine(self, line):
         parts = line.split()
@@ -93,6 +116,7 @@ class resultCheck(object):
         id = parts[2]
         return (time, type, id)
 
-check = resultCheck(sys.argv[1], sys.argv[2])
-check.run()
-check.printResult()
+if __name__ == "__main__":
+    check = resultCheck(sys.argv[1], sys.argv[2])
+    check.run()
+    check.printResult()

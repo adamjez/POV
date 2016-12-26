@@ -18,7 +18,8 @@ class EventLogger:
         event = '{:%H:%M:%S.%f} {} {}'.format(eventDatetime, eventType, description)
         self.events.append(event)
 
-    def addTouch(self, time, dummyId):
+    def addTouch(self, time, dummy):
+        dummyId = dummy.get_player_index()
         # We internally index lines from 0 index but in result script there is indexed from 1
         self.addEvent(time, "TOUCH", str(dummyId[0] + 1) + ',' + str(dummyId[1]))
 

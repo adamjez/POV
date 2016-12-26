@@ -2,7 +2,7 @@ import sys
 import cv2
 import core
 import game
-
+    
 ###################
 # Run Information #
 ###################
@@ -179,8 +179,6 @@ if __name__ == "__main__":
             processVideo(inputName, isLooping)
         except KeyboardInterrupt:
             pass
-        finally:
-            print("TODO show_some_analysis")
     else:
         print("Unkown parameter given")
         sys.exit(1)

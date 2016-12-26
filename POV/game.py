@@ -1,8 +1,9 @@
 import numpy as np
+import os
 
 from drawer import Drawer
 from event_logger import EventLogger
-
+from resultCheck import resultCheck
 
 class Game(object):
     """Simulates the game and evaluates it"""
@@ -13,7 +14,10 @@ class Game(object):
         self.frameCount = frameCount
         self.score = [0, 0]
         self.touchBuffer = []
-        self.eventLogger = EventLogger(videoName + "_result.txt")
+        filename, file_extension = os.path.splitext(videoName)
+        self.resultLog = filename + "_result.txt"
+        self.correctLog = filename + ".txt"
+        self.eventLogger = EventLogger(self.resultLog)
         self.shooter_index = None
 
     def processFrame(self, currentTime, frameNumber, ball, players, image, goal, heatmap, touch):
@@ -30,7 +34,7 @@ class Game(object):
             shooterIndex = self.touchBuffer[0].get_player_index()
             # TODO calculate which index it is may be better
             self.shooter_index = shooterIndex[0] * self.options['Players']['Count'][0] + shooterIndex[1] - 1
-            self.eventLogger.addGoal(currentTime, shooterIndex)
+            self.eventLogger.addGoal(currentTime, 1 if goal[0] else 2)
 
         if self.shooter_index is not None:
             output.draw_circle(players[self.shooter_index].get_position(), 20)
@@ -55,7 +59,7 @@ class Game(object):
 
         if touch is not None:
             output.draw_circle(touch.get_position(), 40, (0, 255, 255), 5)
-            self.eventLogger.addTouch(currentTime, touch.get_player_index())
+            self.eventLogger.addTouch(currentTime, touch)
             self.touchBuffer.insert(0, touch)
             if len(self.touchBuffer) > self.options['Touch']['BufferSize']:
                 self.touchBuffer.pop()
@@ -67,3 +71,9 @@ class Game(object):
 
     def gameEnd(self):
         self.eventLogger.save()
+
+        rc = resultCheck(self.correctLog, self.resultLog)
+        rc.run()
+        rc.printResult()
+
+        
