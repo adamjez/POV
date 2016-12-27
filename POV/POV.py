@@ -18,13 +18,18 @@ options = {
     "PlayGround": (
         # (80, 25),  # Specifies corner for playground rectangle
         # (770, 515)  # Specifies corner for playground rectangle
+        # game_01
+        # (75, 15),  # Specifies corner for playground rectangle
+        # (780, 520)  # Specifies corner for playground rectangle
 
-        (75, 15),  # Specifies corner for playground rectangle
-        (780, 520)  # Specifies corner for playground rectangle
+        # game_02+
+        (85, 15),  # Specifies corner for playground rectangle
+        (790, 520)  # Specifies corner for playground rectangle
     ),
 
     'Lines': {
-        'XPos': [108, 273, 438, 605],  # Specifies lines distance in pixels from left
+        # 'XPos': [108, 273, 438, 605],  # Specifies lines distance in pixels from left
+        'XPos': [105, 273, 438, 605],  # Specifies lines distance in pixels from left
         'Width': 40,  # Width of line in pixels for line segmentations
         'Belongs': [1, 2, 1, 2]  # Specifies who owns players on given line indexed from left to right
     },
@@ -52,8 +57,8 @@ options = {
     "Goals": {
         "HistoryLength": 5,
         "Gates": (
-            [(0, 195), (15, 318)],
-            [(690, 190), (705, 315)]
+            [(0, 190), (15, 318)],
+            [(690, 185), (705, 315)]
         )
     },
 
@@ -102,7 +107,7 @@ def processVideo(videoPath, is_looping):
         ret, frame = vidFile.read()  # read first frame, and the return code of the function.
         if ret is False: break
 
-        # if frame_counter < 300:
+        # if frame_counter < 700:
         #     frame_counter += 1
         #     currentTime += int(1 / fps * 1000)
         #     continue
