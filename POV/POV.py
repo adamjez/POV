@@ -16,12 +16,15 @@ import game
 
 options = {
     "PlayGround": (
-        (80, 25),  # Specifies corner for playground rectangle
-        (770, 515)  # Specifies corner for playground rectangle
+        # (80, 25),  # Specifies corner for playground rectangle
+        # (770, 515)  # Specifies corner for playground rectangle
+
+        (75, 15),  # Specifies corner for playground rectangle
+        (780, 520)  # Specifies corner for playground rectangle
     ),
 
     'Lines': {
-        'XPos': [105, 265, 425, 588],  # Specifies lines distance in pixels from left
+        'XPos': [108, 273, 438, 605],  # Specifies lines distance in pixels from left
         'Width': 40,  # Width of line in pixels for line segmentations
         'Belongs': [1, 2, 1, 2]  # Specifies who owns players on given line indexed from left to right
     },
@@ -49,8 +52,8 @@ options = {
     "Goals": {
         "HistoryLength": 5,
         "Gates": (
-            [(0, 193), (15, 313)],
-            [(675, 190), (690, 310)]
+            [(0, 195), (15, 318)],
+            [(690, 190), (705, 315)]
         )
     },
 

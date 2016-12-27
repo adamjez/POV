@@ -25,7 +25,6 @@ class DetectPlayers:
         self.kernel3x3 = np.ones((3, 3), np.uint8)
 
     def detect(self, image):
-        # return []  # TODO comment when needed!
         height, width, channels = image.shape
         return self.processLines(image, height)
 
@@ -73,7 +72,8 @@ class DetectPlayers:
             playerIndex = 1
             for dummy_pos in dummyIndexes:
                 dummys.append(
-                    models.Dummy((linePos, dummy_pos), (lineIndex, playerIndex), lineIndex, (linePos + center, dummy_pos), belongs))
+                    models.Dummy((linePos, dummy_pos), (lineIndex, playerIndex), lineIndex,
+                                 (linePos + center, dummy_pos), belongs))
                 # cv2.rectangle(image, (linePos + center - int(width / 2), index - int(self.dummyHeight / 2)),
                 #               (linePos + center + int(width / 2), index + int(self.dummyHeight / 2)), (255, 0, 0))
                 playerIndex += 1
@@ -230,6 +230,9 @@ class DetectPlayers:
             nextEval = np.inf
             nextIndex = None
             for x in L:
+                if x not in rows: #TODO fix better
+                    continue
+
                 if rows[x] < nextEval:
                     nextIndex = x
                     nextEval = rows[x]
