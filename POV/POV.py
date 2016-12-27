@@ -55,7 +55,7 @@ options = {
     },
 
     "Touch": {
-        "ToleranceDetection": 34,
+        "ToleranceDetection": 40,
         "BufferSize": 5
     },
 }
