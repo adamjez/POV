@@ -60,6 +60,10 @@ class Drawer:
         model.render(self)
         return self
 
+    def draw_line(self, point1, point2, color=(255, 255, 0), thickness=1):
+        cv2.line(self.image, point1, point2, color, thickness)
+        return self
+
     def show(self):
         cv2.imshow(self.window_name, self.image)
 

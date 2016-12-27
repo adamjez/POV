@@ -2,7 +2,7 @@ import sys
 import cv2
 import core
 import game
-    
+
 ###################
 # Run Information #
 ###################
@@ -87,7 +87,6 @@ def processVideo(videoPath, is_looping):
     print("size: %d x %d" % (vidFile.get(cv2.CAP_PROP_FRAME_WIDTH), vidFile.get(cv2.CAP_PROP_FRAME_HEIGHT)))
     print("looping: %r" % is_looping)
 
-    preproc = core.preprocessor(options['PlayGround'])
     proc = core.processor(options, fps)
     currentGame = game.Game(options, videoPath, fps, nFrames)
 
@@ -108,7 +107,7 @@ def processVideo(videoPath, is_looping):
         if is_looping and reset_to_start(vidFile, frame_counter, nFrames):
             frame_counter = 0
 
-        playground = preproc.run(frame)
+        playground = proc.preprocess(frame)
         ball, players, image, goal, heatmap, touch = proc.run(playground)
         currentGame.processFrame(currentTime, frame_counter, ball, players, image, goal, heatmap, touch)
 
@@ -145,10 +144,9 @@ def key_detected():
 def processImage(imagePath):
     frame = cv2.imread(imagePath)
 
-    preproc = core.preprocessor(options['PlayGround'])
-    proc = core.processor(options)
+    proc = core.processor(options, 1)
 
-    playground = preproc.run(frame)
+    playground = proc.preprocess(frame)
     proc.run(playground)
 
     # visualParameters(frame)

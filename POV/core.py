@@ -12,6 +12,13 @@ class processor:
         self.detect_goal = DetectGoal(options)
         self.detect_ball_heatmap = DetectBallHeatMap(options, fps)
         self.detect_touch = DetectTouch(options)
+        self.play_ground = options['PlayGround']
+
+    def preprocess(self, image):
+        playground = image[
+                     self.play_ground[0][1]:self.play_ground[1][1],
+                     self.play_ground[0][0]:self.play_ground[1][0]].copy()
+        return playground
 
     def run(self, image):
         players = self.detect_players.detect(image)
@@ -21,14 +28,3 @@ class processor:
         goal = self.detect_goal.detect(image, ball)
 
         return ball, players, image, goal, heatmap, touch
-
-
-class preprocessor:
-    def __init__(self, play_ground):
-        self.play_ground = play_ground
-
-    def run(self, image):
-        playground = image[
-                     self.play_ground[0][1]:self.play_ground[1][1],
-                     self.play_ground[0][0]:self.play_ground[1][0]].copy()
-        return playground

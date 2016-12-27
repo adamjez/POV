@@ -5,6 +5,7 @@ from drawer import Drawer
 from event_logger import EventLogger
 from resultCheck import resultCheck
 
+
 class Game(object):
     """Simulates the game and evaluates it"""
 
@@ -49,10 +50,8 @@ class Game(object):
         output.draw_text("{0:.2f}s".format(currentTime / 1000) + "|" + str(frameNumber), (0, height - 290),
                          size=0.6)
 
-        # height, width, channels = image.shape
-        # for point in LinePositions:
-        #     cv2.line(playground, (options['PlayGround'][0][0] + point, 0),
-        #              (options['PlayGround'][0][0] + point, height), (0, 0, 255))
+        height, width, channels = image.shape
+        self._draw_lines(output, height)
 
         # if heatmap is not None:
         #     Drawer(heatmap, "Ball heat map").show()
@@ -69,11 +68,14 @@ class Game(object):
 
         output.show()
 
+    def _draw_lines(self, output: Drawer, height) -> Drawer:
+        for point in self.options['Lines']['XPos']:
+            output.draw_line((point, 0), (point, height))
+        return output
+
     def gameEnd(self):
         self.eventLogger.save()
 
         rc = resultCheck(self.correctLog, self.resultLog)
         rc.run()
         rc.printResult()
-
-        
