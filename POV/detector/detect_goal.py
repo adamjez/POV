@@ -16,6 +16,7 @@ class DetectGoal:
 
     def detect(self, image, ball):
         goal_keep_mask = np.zeros([image.shape[0], image.shape[1]], np.uint8)
+        height, width, channels = image.shape
 
         # left goal keep
         left = self.options['Gates'][0]
@@ -24,12 +25,10 @@ class DetectGoal:
         right = self.options['Gates'][1]
         cv2.rectangle(goal_keep_mask, tuple(right[0]), tuple(right[1]), (255, 255, 255), thickness=-1)
 
-        ball_leftmost = ball.get_leftmost()
-        ball_rightmost = ball.get_rightmost()
-
+        ball_boundaries = ball.get_boundaries(width)
         self.ball_in_field_history.extend(np.array(ball.is_visible()))
-        self.ball_in_left_goal_history.extend(goal_keep_mask[ball_leftmost[1], ball_leftmost[0]] == 255)
-        self.ball_in_right_goal_history.extend(goal_keep_mask[ball_rightmost[1], ball_rightmost[0]] == 255)
+        self.ball_in_left_goal_history.extend(goal_keep_mask[ball_boundaries[0][1], ball_boundaries[0][0]] == 255)
+        self.ball_in_right_goal_history.extend(goal_keep_mask[ball_boundaries[1][1], ball_boundaries[1][0]] == 255)
 
         if self._detect_goal(self.ball_in_left_goal_history):
             return [False, True]
