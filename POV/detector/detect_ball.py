@@ -44,24 +44,18 @@ class DetectBall:
         color_upper = self.ball_hsv_color + self.ball_up_corr
 
         mask = cv2.inRange(hsv, color_lower, color_upper)
-        # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, None, iterations=3)  # erode->dilate
-
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=3)  # erode->dilate
-
         return mask
 
     def detect(self, image):
-        # self.check_keyboard()
-
         hsv = self._prepare_image(image)
 
         mask = self._get_threshold_mask(hsv)
         mask_visual = Drawer(mask, "Mask", cv2.COLOR_GRAY2RGB)
 
-        if DEBUG:
-            mask_visual.draw_text(str(self.ball_low_corr) + "|" + str(self.ball_up_corr))
+        # if DEBUG:
+        #     mask_visual.draw_text(str(self.ball_low_corr) + "|" + str(self.ball_up_corr))
 
         best_circle, best_contour = self._get_best_circle(mask, mask_visual)
 

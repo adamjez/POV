@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import models
 
 
 class Drawer:
@@ -47,11 +48,11 @@ class Drawer:
         cv2.rectangle(self.image, tuple(points[0]), tuple(points[1]), color, thickness)
         return self
 
-    def draw_marker(self, point, color=(255, 0, 0)):
+    def draw_marker(self, point: tuple, color=(255, 0, 0)):
         cv2.drawMarker(self.image, point, color)
         return self
 
-    def draw_model(self, model):
+    def draw_model(self, model: models.BaseModel):
         """
         Draws model
         :param model: models.BaseModel

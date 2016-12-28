@@ -49,6 +49,14 @@ class Ball(BaseModel):
     def __str__(self):
         return "(" + str(self.position) + " , " + str(self.BALL_KNOWN_RADIUS) + ")"
 
+    def get_leftmost(self) -> tuple:
+        leftmost = self.position[0] - self.BALL_KNOWN_RADIUS
+        return leftmost, self.position[1]
+
+    def get_rightmost(self) -> tuple:
+        rightmost = self.position[0] + self.BALL_KNOWN_RADIUS
+        return rightmost, self.position[1]
+
 
 class Dummy(BaseModel):
     """Represents dummy (footbal player) on the line"""
