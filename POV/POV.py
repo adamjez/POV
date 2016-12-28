@@ -61,7 +61,7 @@ default_options = {
             # [130, 213, 175]
         ),
         'MedianBlurKernel': 5,
-        'MinContourSize': 10,
+        'MinContourArea': 300,
         'MinRadius': 9,
     },
 

@@ -3,7 +3,7 @@ import numpy as np
 import models
 from drawer import Drawer
 
-DEBUG = True
+DEBUG = False
 
 
 class DetectBall:
@@ -21,7 +21,8 @@ class DetectBall:
         im2, circle_contours, hierarchy = cv2.findContours(template, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         return circle_contours[0]
 
-    def _check_ball_color_from_center(self, hsv):
+    @staticmethod
+    def _check_ball_color_from_center(hsv):
         """
         For debug checking HSV color from "center" of playground
         :param hsv:
@@ -38,7 +39,8 @@ class DetectBall:
         hsv = cv2.medianBlur(hsv, self.ball_options['MedianBlurKernel'])
         return hsv
 
-    def _get_threshold_mask(self, hsv, lower, upper):
+    @staticmethod
+    def _get_threshold_mask(hsv, lower, upper):
         mask = cv2.inRange(hsv, lower, upper)
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=3)  # erode->dilate
@@ -118,16 +120,15 @@ class DetectBall:
             if DEBUG:
                 mask_visual.draw_contour(cnt)
 
-            if cnt.size < self.ball_options['MinContourSize']:
+            area = cv2.contourArea(cnt)
+            if area < self.ball_options['MinContourArea']:
                 continue
-
-            # TODO better filtering (based on this? http://layer0.authentise.com/detecting-circular-shapes-using-contours.html )
 
             if DEBUG:
                 mask_visual.draw_contour(cnt, (255, 0, 0))
 
             (x, y), radius = cv2.minEnclosingCircle(cnt)
-            if radius < self.ball_options['MinRadius']:
+            if radius < self.ball_options['MinRadius']:  # TODO necessary?
                 continue
 
             center = (int(x), int(y))
