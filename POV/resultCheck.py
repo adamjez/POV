@@ -63,8 +63,10 @@ class resultCheck(object):
                         else:
                             if time2 < time:
                                 loadNewCorrectLine = False
+                                self.addedEvents.append((time2, type2))
                             else:
                                 loadNewScriptLine = False
+                                self.missedEvents.append((time, type))
 
                             self.badEvents.append((time, type))
                             if id == id2:
@@ -74,7 +76,7 @@ class resultCheck(object):
                             else:
                                 print("Different event at given time: " + type + " instead of " + type2 + " (" + str(deltaTime) + ")")
                     elif time2 < time:
-                        self.addedEvents.append((time, type))
+                        self.addedEvents.append((time2, type2))
                         loadNewCorrectLine = False
 
                     else:
