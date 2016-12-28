@@ -54,7 +54,7 @@ class Game(object):
 
         height, width, channels = image.shape
         self._draw(output, height, currentTime, frameNumber)
-        output.show()
+        output.show() #TODO show
 
     def _draw(self, output: Drawer, height, currentTime, frameNumber):
         # goal gates

@@ -7,22 +7,22 @@ DEBUG = False
 
 
 class DetectBall:
-    def create_template(self):
+    def __init__(self, options):
+        self.ball_options = options['Ball']
+        self.color_lower = np.array(self.ball_options['Range'][0])
+        self.color_upper = np.array(self.ball_options['Range'][1])
+        self.ball_template = self.create_template()
+
+    @staticmethod
+    def create_template():
         size = models.Ball.BALL_KNOWN_RADIUS
         template = np.zeros([2 * size, 2 * size], np.uint8)
-        cv2.circle(template, (size, size), size,
-                   (255, 255, 255), -1)
+        cv2.circle(template, (size, size), size, (255, 255, 255), -1)
         im2, circle_contours, hierarchy = cv2.findContours(template, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         return circle_contours[0]
 
-    def __init__(self, options):
-        self.ball_options = options['Ball']
-        self.ball_hsv_color = self.ball_options['HSV']
-        self.ball_low_corr = np.array([50, 50, 50])  # TODO maybe tweak the corrections
-        self.ball_up_corr = np.array([20, 20, 20])
-        self.ball_template = self.create_template()
-
-    def _check_ball_color_from_center(self, hsv):
+    @staticmethod
+    def _check_ball_color_from_center(hsv):
         """
         For debug checking HSV color from "center" of playground
         :param hsv:
@@ -36,32 +36,65 @@ class DetectBall:
 
     def _prepare_image(self, image):
         hsv = cv2.cvtColor(image.copy(), cv2.COLOR_RGB2HSV)
-        hsv = cv2.medianBlur(hsv, 5)  # TODO might not be necessary
+        hsv = cv2.medianBlur(hsv, self.ball_options['MedianBlurKernel'])
         return hsv
 
-    def _get_threshold_mask(self, hsv):
-        color_lower = self.ball_hsv_color - self.ball_low_corr
-        color_upper = self.ball_hsv_color + self.ball_up_corr
-
-        mask = cv2.inRange(hsv, color_lower, color_upper)
-        # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, None, iterations=3)  # erode->dilate
-
+    @staticmethod
+    def _get_threshold_mask(hsv, lower, upper):
+        mask = cv2.inRange(hsv, lower, upper)
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=3)  # erode->dilate
-
         return mask
 
+    def _trackbar_change(self, val):
+        hOrSOrV = cv2.getTrackbarPos('H/S/V', 'hsv_trackbars')
+
+        h, s, v = cv2.split(self.hsv)
+
+        low = cv2.getTrackbarPos("LOW", 'hsv_trackbars')
+        high = cv2.getTrackbarPos("HIGH", 'hsv_trackbars')
+
+        if hOrSOrV == 0:
+            what = h
+            self.color_lower[0] = low
+            self.color_upper[0] = high
+        elif hOrSOrV == 1:
+            what = s
+            self.color_lower[1] = low
+            self.color_upper[1] = high
+        else:
+            what = v
+            self.color_lower[2] = low
+            self.color_upper[2] = high
+
+        cv2.imshow("h", what)
+        # cv2.imshow("h", whatMask)
+
+        mask = self._get_threshold_mask(self.hsv, self.color_lower, self.color_upper)
+
+        vis = Drawer(mask, "whatMask", cv2.COLOR_GRAY2RGB)
+        vis.draw_text(str(self.color_lower) + "|" + str(self.color_upper))
+        vis.show()
+
+    def _nothing(self, val):
+        pass
+
+    def _track_colors(self, hsv):
+        self.hsv = hsv
+        cv2.namedWindow("hsv_trackbars")
+        cv2.createTrackbar("H/S/V", "hsv_trackbars", 0, 2, self._nothing)
+        cv2.createTrackbar("LOW", "hsv_trackbars", 0, 255, self._trackbar_change)
+        cv2.createTrackbar("HIGH", "hsv_trackbars", 0, 255, self._trackbar_change)
+
     def detect(self, image):
-        # self.check_keyboard()
-
         hsv = self._prepare_image(image)
+        # self._track_colors(hsv)
 
-        mask = self._get_threshold_mask(hsv)
+        mask = self._get_threshold_mask(hsv, self.color_lower, self.color_upper)
         mask_visual = Drawer(mask, "Mask", cv2.COLOR_GRAY2RGB)
 
-        if DEBUG:
-            mask_visual.draw_text(str(self.ball_low_corr) + "|" + str(self.ball_up_corr))
+        # if DEBUG:
+        #     mask_visual.draw_text(str(self.ball_low_corr) + "|" + str(self.ball_up_corr))
 
         best_circle, best_contour = self._get_best_circle(mask, mask_visual)
 
@@ -87,16 +120,15 @@ class DetectBall:
             if DEBUG:
                 mask_visual.draw_contour(cnt)
 
-            if cnt.size < self.ball_options['MinContourSize']:
+            area = cv2.contourArea(cnt)
+            if area < self.ball_options['MinContourArea']:
                 continue
-
-            # TODO better filtering (based on this? http://layer0.authentise.com/detecting-circular-shapes-using-contours.html )
 
             if DEBUG:
                 mask_visual.draw_contour(cnt, (255, 0, 0))
 
             (x, y), radius = cv2.minEnclosingCircle(cnt)
-            if radius < self.ball_options['MinRadius']:
+            if radius < self.ball_options['MinRadius']:  # TODO necessary?
                 continue
 
             center = (int(x), int(y))

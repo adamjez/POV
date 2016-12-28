@@ -49,6 +49,21 @@ class Ball(BaseModel):
     def __str__(self):
         return "(" + str(self.position) + " , " + str(self.BALL_KNOWN_RADIUS) + ")"
 
+    def get_boundaries(self, img_width: int) -> tuple:
+        """
+        Returns left and rightmost points of known ball.
+        If exceeds image size, returns max or min value
+        :param img_width: playground width
+        :return: (leftmost, rightmost)
+        """
+        leftmost = self.position[0] - self.BALL_KNOWN_RADIUS
+        rightmost = self.position[0] + self.BALL_KNOWN_RADIUS
+
+        return (
+            (0 if leftmost < 0 else leftmost, self.position[1]),
+            (img_width - 1 if rightmost >= img_width else rightmost, self.position[1])
+        )
+
 
 class Dummy(BaseModel):
     """Represents dummy (footbal player) on the line"""

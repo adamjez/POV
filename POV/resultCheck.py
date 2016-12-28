@@ -12,7 +12,8 @@ from datetime import datetime
 #     which mean that dummy on first line and third from top touched the ball
 # Example: sample_output.txt
 
-TIME_TOLERANCE = 1500 # Tolerance in ms for same events
+TIME_TOLERANCE = 1500  # Tolerance in ms for same events
+
 
 def millis_interval(start, end):
     """start and end are datetime instances"""
@@ -22,8 +23,10 @@ def millis_interval(start, end):
     millis += diff.microseconds / 1000
     return millis
 
+
 class resultCheck(object):
     """description of class"""
+
     def __init__(self, correctOutputPath, scriptOutputPath):
         self.correctOutputPath = correctOutputPath
         self.scriptOutputPath = scriptOutputPath
@@ -33,29 +36,29 @@ class resultCheck(object):
         self.badEvents = []
         self.correctEventsCount = 0
         self.scriptEventsCount = 0
-             
 
     def run(self):
-        with open(self.correctOutputPath) as correctFile:
-            with open(self.scriptOutputPath) as scriptFile:
-                correctLines = [line.rstrip('\n') for line in correctFile]
-                scriptLines = [line.rstrip('\n') for line in scriptFile]
+        try:
+            with open(self.correctOutputPath) as correctFile:
+                with open(self.scriptOutputPath) as scriptFile:
+                    correctLines = [line.rstrip('\n') for line in correctFile]
+                    scriptLines = [line.rstrip('\n') for line in scriptFile]
 
-                loadNewCorrectLine = True
-                loadNewScriptLine = True
+                    loadNewCorrectLine = True
+                    loadNewScriptLine = True
                 self.correctEventsCount = len(correctLines)
                 self.scriptEventsCount = len(scriptLines)
                 while len(correctLines) > 0 or len(scriptLines) > 0:
                     if loadNewScriptLine and len(scriptLines) > 0:
                         (time2, type2, id2) = self.parseLine(scriptLines.pop(0))
                     if loadNewCorrectLine and len(correctLines) > 0:
-                        (time, type, id)= self.parseLine(correctLines.pop(0))
-                    
+                        (time, type, id) = self.parseLine(correctLines.pop(0))
+
                     loadNewCorrectLine = True
                     loadNewScriptLine = True
 
                     deltaTime = abs(millis_interval(time, time2))
-    
+
                     if deltaTime < TIME_TOLERANCE:
                         if type == type2 and id == id2:
                             self.correctEvents.append((type, deltaTime))
@@ -72,9 +75,12 @@ class resultCheck(object):
                             if id == id2:
                                 print("Missinterpreted event: " + type + " missed id (" + str(deltaTime) + ")")
                             elif type == type2:
-                                print("Bad ids for event type: " + type + " given: " + id2 + " instead of: " + id + " (" + str(deltaTime) + ")")
+                                print(
+                                    "Bad ids for event type: " + type + " given: " + id2 + " instead of: " + id + " (" + str(
+                                        deltaTime) + ")")
                             else:
-                                print("Different event at given time: " + type + " instead of " + type2 + " (" + str(deltaTime) + ")")
+                                print("Different event at given time: " + type + " instead of " + type2 + " (" + str(
+                                    deltaTime) + ")")
                     elif time2 < time:
                         self.addedEvents.append((time2, type2))
                         loadNewCorrectLine = False
@@ -86,14 +92,16 @@ class resultCheck(object):
                 if len(correctLines) > len(scriptLines):
                     print("Correct file have some events but script file doesn't")
                     for line in correctLines:
-                        (time, type, id)= self.parseLine(line)
+                        (time, type, id) = self.parseLine(line)
                         self.missedEvents.append((time, type))
 
                 if len(scriptLines) > len(correctLines):
                     print("Script file have some events but correct file doesn't")
                     for line in scriptLines:
-                        (time, type, id)= self.parseLine(line)
+                        (time, type, id) = self.parseLine(line)
                         self.addedEvents.append((time, type))
+        except FileNotFoundError:
+            print("Skipping result check because file not exists")
 
     def printResult(self):
         print("Result Check Completed!")
@@ -103,12 +111,12 @@ class resultCheck(object):
         if correctEventCount != 0:
             timeDiff = sum([x[1] for x in self.correctEvents]) / correctEventCount
 
-        print("Events count: " + str(self.correctEventsCount) + " (correct) " + str(self.scriptEventsCount) + " (script result)")
+        print("Events count: " + str(self.correctEventsCount) + " (correct) " + str(
+            self.scriptEventsCount) + " (script result)")
         print("Correct events: " + str(correctEventCount) + " time differs: " + str(timeDiff) + " ms")
         print("Missed events: " + str(len(self.missedEvents)))
         print("Added events: " + str(len(self.addedEvents)))
         print("Bad events: " + str(len(self.badEvents)))
-
 
     def parseLine(self, line):
         parts = line.split()
@@ -117,6 +125,7 @@ class resultCheck(object):
         type = parts[1]
         id = parts[2]
         return (time, type, id)
+
 
 if __name__ == "__main__":
     check = resultCheck(sys.argv[1], sys.argv[2])

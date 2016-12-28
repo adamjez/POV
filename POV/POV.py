@@ -34,7 +34,7 @@ default_options = {
             [(690, 185), (705, 315)]
         ],
         "ScoreXPos": [
-            295, 355
+            300, 360
         ]
     },
 
@@ -54,7 +54,12 @@ default_options = {
 
     'Ball': {
         'HSV': [121, 193, 164],
-        'MinContourSize': 10,
+        'Range': (
+            [100, 143, 120],
+            [130, 213, 175]
+        ),
+        'MedianBlurKernel': 5,
+        'MinContourArea': 300,
         'MinRadius': 9,
     },
 
@@ -122,6 +127,8 @@ if __name__ == "__main__":
     inputName = sys.argv[2]
     isLooping = args_count >= 4 and sys.argv[3] == "-l"
     inputConfig = os.path.splitext(inputName)[0] + ".json"
+    min_frame = int(sys.argv[4]) if args_count >= 5 else None
+    max_frame = int(sys.argv[5]) if args_count >= 6 else None
 
     options = load_options(inputConfig)
     football = Football(options)
@@ -129,7 +136,7 @@ if __name__ == "__main__":
     if inputType == "-i":
         football.processImage(inputName)
     elif inputType == "-v":
-        football.processVideo(inputName, isLooping)
+        football.processVideo(inputName, isLooping, min_frame, max_frame)
     else:
         print("Unkown parameter given")
         sys.exit(1)
