@@ -7,8 +7,24 @@ import game
 class Football:
     def __init__(self, options):
         self.options = options
+        self.proc = None
+        self.current_game = None
 
-    def processVideo(self, videoPath, is_looping):
+    @staticmethod
+    def _get_capture_info(vidFile, is_looping):
+        frames_count = int(vidFile.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = vidFile.get(cv2.CAP_PROP_FPS)
+        width = vidFile.get(cv2.CAP_PROP_FRAME_WIDTH)
+        height = vidFile.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
+        print("frame number: %s" % frames_count)
+        print("FPS value: %s" % fps)
+        print("size: %d x %d" % (width, height))
+        print("looping: %r" % is_looping)
+
+        return frames_count, fps, width, height
+
+    def processVideo(self, videoPath, is_looping, min_frame=None, max_frame=None):
         try:
             try:
                 vidFile = cv2.VideoCapture(videoPath)
@@ -20,36 +36,30 @@ class Football:
                 print("capture stream not open")
                 sys.exit(1)
 
-            fps = vidFile.get(cv2.CAP_PROP_FPS)
-            nFrames = int(vidFile.get(cv2.CAP_PROP_FRAME_COUNT))
-            print("frame number: %s" % nFrames)
-            print("FPS value: %s" % fps)
-            print("size: %d x %d" % (vidFile.get(cv2.CAP_PROP_FRAME_WIDTH), vidFile.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-            print("looping: %r" % is_looping)
+            frames_count, fps, _, _ = self._get_capture_info(vidFile, is_looping)
 
-            proc = core.processor(self.options, fps)
-            currentGame = game.Game(self.options, videoPath, fps, nFrames)
+            self.proc = core.processor(self.options, fps)
+            self.current_game = game.Game(self.options, videoPath, fps, frames_count)
 
             frame_counter = 0
             currentTime = 0
 
-            # nFrames = 460 # TODO put away
+            if max_frame is not None:
+                frames_count = max_frame
 
             while vidFile.isOpened():  # note that we don't have to use frame number here, we could read from a live written file.
                 ret, frame = vidFile.read()  # read first frame, and the return code of the function.
                 if ret is False: break
 
-                # if frame_counter < 700:
-                #     frame_counter += 1
-                #     currentTime += int(1 / fps * 1000)
-                #     continue
+                if min_frame is not None and frame_counter < min_frame:
+                    frame_counter += 1
+                    currentTime += int(1 / fps * 1000)
+                    continue
 
-                if is_looping and self.reset_to_start(vidFile, frame_counter, nFrames):
+                if is_looping and self.reset_to_start(vidFile, frame_counter, frames_count):
                     frame_counter = 0
 
-                playground = proc.preprocess(frame)
-                ball, players, image, goal, heatmap, touch = proc.run(playground)
-                currentGame.processFrame(currentTime, frame_counter, ball, players, image, goal, heatmap, touch)
+                self._process_frame(frame, frame_counter, currentTime)
 
                 break_type = self.key_detected()
                 if break_type is True:
@@ -58,23 +68,34 @@ class Football:
                 currentTime += int(1 / fps * 1000)  # in mSec
                 frame_counter += 1
 
-            currentGame.gameEnd()
+            self.current_game.gameEnd()
             vidFile.release()
             cv2.destroyAllWindows()
         except KeyboardInterrupt:
             pass
 
-    def processImage(self, imagePath):
-        frame = cv2.imread(imagePath)
+    def _process_frame(self, frame, frame_number, current_time):
+        """
+        Process one frame
+        :param frame:
+        :param frame_number:
+        :param current_time:
+        :return:
+        """
+        playground = self.proc.preprocess(frame)
+        ball, players, image, goal, heatmap, touch = self.proc.run(playground)
+        self.current_game.processFrame(current_time, frame_number, ball, players, image, goal, heatmap, touch)
 
-        proc = core.processor(self.options, 1)
-
-        playground = proc.preprocess(frame)
-        proc.run(playground)
-
-        # visualParameters(frame)
-        cv2.imshow("frameWindow", frame)
-        # cv2.waitKey(int(1/fps*1000)) # time to wait between frames, in mSec
+    def processImage(self, image_path: str):
+        """
+        Process image as one frame of video
+        :param image_path: should be same as one video frame
+        :return: None
+        """
+        frame = cv2.imread(image_path)
+        self.proc = core.processor(self.options, 1)
+        self.current_game = game.Game(self.options, image_path, 1, 1)
+        self._process_frame(frame, 0, 0)
         cv2.waitKey()
 
     @staticmethod
