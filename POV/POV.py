@@ -1,7 +1,7 @@
+import os
 import sys
-import cv2
-import core
-import game
+import json
+from football import Football
 
 ###################
 # Run Information #
@@ -14,24 +14,28 @@ import game
 # Field Parameters #
 ####################
 
-options = {
-    "PlayGround": (
-        # (80, 25),  # Specifies corner for playground rectangle
-        # (770, 515)  # Specifies corner for playground rectangle
-        # game_01
-        # (75, 15),  # Specifies corner for playground rectangle
-        # (780, 520)  # Specifies corner for playground rectangle
-
+default_options = {
+    "PlayGround": [
         # game_02+
-        (85, 15),  # Specifies corner for playground rectangle
-        (790, 520)  # Specifies corner for playground rectangle
-    ),
+        [85, 15],  # Specifies corner for playground rectangle
+        [790, 520]  # Specifies corner for playground rectangle
+    ],
 
     'Lines': {
-        # 'XPos': [108, 273, 438, 605],  # Specifies lines distance in pixels from left
         'XPos': [105, 273, 438, 605],  # Specifies lines distance in pixels from left
         'Width': 40,  # Width of line in pixels for line segmentations
         'Belongs': [1, 2, 1, 2]  # Specifies who owns players on given line indexed from left to right
+    },
+
+    "Goals": {
+        "HistoryLength": 5,
+        "Gates": [
+            [(0, 190), (15, 318)],
+            [(690, 185), (705, 315)]
+        ],
+        "ScoreXPos": [
+            295, 355
+        ]
     },
 
     'Players': {
@@ -54,14 +58,6 @@ options = {
         'MinRadius': 9,
     },
 
-    "Goals": {
-        "HistoryLength": 5,
-        "Gates": (
-            [(0, 190), (15, 318)],
-            [(690, 185), (705, 315)]
-        )
-    },
-
     "Touch": {
         "ToleranceDetection": 40,
         "BufferSize": 5
@@ -69,103 +65,51 @@ options = {
 }
 
 
-def reset_to_start(vidFile, frame_counter, frames_count):
-    if frame_counter == frames_count - 1:
-        vidFile.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        return True
-
-    return False
-
-
-def processVideo(videoPath, is_looping):
-    try:
-        vidFile = cv2.VideoCapture(videoPath)
-    except:
-        print("problem opening input stream")
-        sys.exit(1)
-
-    if not vidFile.isOpened():
-        print("capture stream not open")
-        sys.exit(1)
-
-    fps = vidFile.get(cv2.CAP_PROP_FPS)
-    nFrames = int(vidFile.get(cv2.CAP_PROP_FRAME_COUNT))
-    print("frame number: %s" % nFrames)
-    print("FPS value: %s" % fps)
-    print("size: %d x %d" % (vidFile.get(cv2.CAP_PROP_FRAME_WIDTH), vidFile.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    print("looping: %r" % is_looping)
-
-    proc = core.processor(options, fps)
-    currentGame = game.Game(options, videoPath, fps, nFrames)
-
-    frame_counter = 0
-    currentTime = 0
-
-    # nFrames = 460 # TODO put away
-
-    while vidFile.isOpened():  # note that we don't have to use frame number here, we could read from a live written file.
-        ret, frame = vidFile.read()  # read first frame, and the return code of the function.
-        if ret is False: break
-
-        # if frame_counter < 700:
-        #     frame_counter += 1
-        #     currentTime += int(1 / fps * 1000)
-        #     continue
-
-        if is_looping and reset_to_start(vidFile, frame_counter, nFrames):
-            frame_counter = 0
-
-        playground = proc.preprocess(frame)
-        ball, players, image, goal, heatmap, touch = proc.run(playground)
-        currentGame.processFrame(currentTime, frame_counter, ball, players, image, goal, heatmap, touch)
-
-        break_type = key_detected()
-        if break_type is True:
-            break
-
-        currentTime += int(1 / fps * 1000)  # in mSec
-        frame_counter += 1
-
-    currentGame.gameEnd()
-    vidFile.release()
-    cv2.destroyAllWindows()
-
-
-def key_detected():
-    ch = 0xFF & cv2.waitKey(1)
-    if ch == 32:  # escape
-        print("(x) Video paused")
-        while True:
-            ch = 0xFF & cv2.waitKey(1)
-            if ch == 32:  # escape
-                break
-
-        print("(>) Video unpaused")
-        return False
-    elif ch == 27:  # escape
-        return True
-    elif ch == ord('q'):
-        return True
-    return False
-
-
-def processImage(imagePath):
-    frame = cv2.imread(imagePath)
-
-    proc = core.processor(options, 1)
-
-    playground = proc.preprocess(frame)
-    proc.run(playground)
-
-    # visualParameters(frame)
-    cv2.imshow("frameWindow", frame)
-    # cv2.waitKey(int(1/fps*1000)) # time to wait between frames, in mSec
-    cv2.waitKey()
-
-
 ################
 # MAIN PROGRAM #
 ################
+
+def dict_merge(a, b, path=None):
+    """
+    Merges B into A
+    Base on http://stackoverflow.com/questions/7204805/dictionaries-of-dictionaries-merge
+    :param a:
+    :param b:
+    :param path:
+    :return:
+    """
+    if path is None: path = []
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                dict_merge(a[key], b[key], path + [str(key)])
+            elif a[key] == b[key]:
+                pass  # same leaf value
+            else:
+                a[key] = b[key]
+        else:
+            a[key] = b[key]
+    return a
+
+
+def load_options(inputConfigFile):
+    """
+    Overrides default options from config file
+    :param inputConfigFile:
+    :return:
+    """
+    try:
+        with open(inputConfigFile) as config_data:
+            custom_cfg = json.load(config_data)
+            return dict_merge(default_options, custom_cfg)
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        print("Exception", str(e))
+        print("Problem with parsing custom config data", "(" + inputConfigFile + ")", "using default")
+
+    return default_options
+
 
 if __name__ == "__main__":
     args_count = len(sys.argv)
@@ -174,17 +118,18 @@ if __name__ == "__main__":
         print("Incorrect number of parameters given")
         sys.exit(1)
 
-    isLooping = args_count >= 4 and sys.argv[3] == "-l"
     inputType = sys.argv[1]
     inputName = sys.argv[2]
+    isLooping = args_count >= 4 and sys.argv[3] == "-l"
+    inputConfig = os.path.splitext(inputName)[0] + ".json"
+
+    options = load_options(inputConfig)
+    football = Football(options)
 
     if inputType == "-i":
-        processImage(inputName)
+        football.processImage(inputName)
     elif inputType == "-v":
-        try:
-            processVideo(inputName, isLooping)
-        except KeyboardInterrupt:
-            pass
+        football.processVideo(inputName, isLooping)
     else:
         print("Unkown parameter given")
         sys.exit(1)

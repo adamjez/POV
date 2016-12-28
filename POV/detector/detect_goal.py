@@ -20,10 +20,10 @@ class DetectGoal:
 
         # left goal keep
         left = self.options['Gates'][0]
-        cv2.rectangle(goal_keep_mask, left[0], left[1], (255, 255, 255), thickness=-1)
+        cv2.rectangle(goal_keep_mask, tuple(left[0]), tuple(left[1]), (255, 255, 255), thickness=-1)
         # right goal keep
         right = self.options['Gates'][1]
-        cv2.rectangle(goal_keep_mask, right[0], right[1], (255, 255, 255), thickness=-1)
+        cv2.rectangle(goal_keep_mask, tuple(right[0]), tuple(right[1]), (255, 255, 255), thickness=-1)
 
         cv2.circle(ball_mask, ball.position, ball.BALL_KNOWN_RADIUS, (255, 255, 255), -1)
         ball_contour = cv2.findNonZero(ball_mask)

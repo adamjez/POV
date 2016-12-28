@@ -20,7 +20,7 @@ class Drawer:
 
         self.window_name = window_name
 
-    def draw_text(self, text, position=(50, 50), color=(0, 0, 255), size=0.9):
+    def draw_text(self, text: str, position=(50, 50), color=(0, 0, 255), size=0.9):
         """
         Draws text on specified position
         :param text:
@@ -44,7 +44,7 @@ class Drawer:
         return self
 
     def draw_rect(self, points, color=(0, 0, 255), thickness=1):
-        cv2.rectangle(self.image, points[0], points[1], color, thickness)
+        cv2.rectangle(self.image, tuple(points[0]), tuple(points[1]), color, thickness)
         return self
 
     def draw_marker(self, point, color=(255, 0, 0)):
