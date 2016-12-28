@@ -12,7 +12,8 @@ from datetime import datetime
 #     which mean that dummy on first line and third from top touched the ball
 # Example: sample_output.txt
 
-TIME_TOLERANCE = 1500 # Tolerance in ms for same events
+TIME_TOLERANCE = 1500  # Tolerance in ms for same events
+
 
 def millis_interval(start, end):
     """start and end are datetime instances"""
@@ -22,8 +23,10 @@ def millis_interval(start, end):
     millis += diff.microseconds / 1000
     return millis
 
+
 class resultCheck(object):
     """description of class"""
+
     def __init__(self, correctOutputPath, scriptOutputPath):
         self.correctOutputPath = correctOutputPath
         self.scriptOutputPath = scriptOutputPath
@@ -33,16 +36,16 @@ class resultCheck(object):
         self.badEvents = []
         self.correctEventsCount = 0
         self.scriptEventsCount = 0
-             
 
     def run(self):
-        with open(self.correctOutputPath) as correctFile:
-            with open(self.scriptOutputPath) as scriptFile:
-                correctLines = [line.rstrip('\n') for line in correctFile]
-                scriptLines = [line.rstrip('\n') for line in scriptFile]
+        try:
+            with open(self.correctOutputPath) as correctFile:
+                with open(self.scriptOutputPath) as scriptFile:
+                    correctLines = [line.rstrip('\n') for line in correctFile]
+                    scriptLines = [line.rstrip('\n') for line in scriptFile]
 
-                loadNewCorrectLine = True
-                loadNewScriptLine = True
+                    loadNewCorrectLine = True
+                    loadNewScriptLine = True
                 self.correctEventsCount = len(correctLines)
                 self.scriptEventsCount = len(scriptLines)
                 while len(correctLines) > 0 or len(scriptLines) > 0:
@@ -103,12 +106,12 @@ class resultCheck(object):
         if correctEventCount != 0:
             timeDiff = sum([x[1] for x in self.correctEvents]) / correctEventCount
 
-        print("Events count: " + str(self.correctEventsCount) + " (correct) " + str(self.scriptEventsCount) + " (script result)")
+        print("Events count: " + str(self.correctEventsCount) + " (correct) " + str(
+            self.scriptEventsCount) + " (script result)")
         print("Correct events: " + str(correctEventCount) + " time differs: " + str(timeDiff) + " ms")
         print("Missed events: " + str(len(self.missedEvents)))
         print("Added events: " + str(len(self.addedEvents)))
         print("Bad events: " + str(len(self.badEvents)))
-
 
     def parseLine(self, line):
         parts = line.split()
@@ -117,6 +120,7 @@ class resultCheck(object):
         type = parts[1]
         id = parts[2]
         return (time, type, id)
+
 
 if __name__ == "__main__":
     check = resultCheck(sys.argv[1], sys.argv[2])
