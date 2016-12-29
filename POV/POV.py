@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 import json
@@ -30,8 +33,8 @@ default_options = {
     "Goals": {
         "HistoryLength": 5,
         "Gates": [
-            [(0, 190), (15, 318)],
-            [(690, 185), (705, 315)]
+            [(0, 190), (25, 318)],
+            [(680, 185), (705, 315)]
         ],
         "ScoreXPos": [
             300, 360
