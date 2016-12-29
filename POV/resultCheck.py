@@ -12,7 +12,7 @@ from datetime import datetime
 #     which mean that dummy on first line and third from top touched the ball
 # Example: sample_output.txt
 
-TIME_TOLERANCE = 1500  # Tolerance in ms for same events
+TIME_TOLERANCE = 1000  # Tolerance in ms for same events
 
 
 def millis_interval(start, end):
@@ -64,10 +64,18 @@ class resultCheck(object):
                             print("Correct event detected: " + type)
                         else:
                             if time2 < time:
-                                loadNewCorrectLine = False
-                                self.addedEvents.append((time2, type2))
+                                loadNewCorrectLine = self.check_in_future(scriptLines, time, type, id)
                             else:
-                                loadNewScriptLine = False
+                                loadNewScriptLine = self.check_in_future(correctLines, time2, type2, id2)
+
+                            if loadNewScriptLine and loadNewCorrectLine:
+                                loadNewCorrectLine = self.check_in_future(scriptLines, time, type, id)
+                                loadNewScriptLine = self.check_in_future(correctLines, time2, type2, id2)
+
+                            if loadNewScriptLine:
+                                self.addedEvents.append((time2, type2))
+                                
+                            if loadNewCorrectLine:
                                 self.missedEvents.append((time, type))
 
                             if id == id2:
@@ -86,6 +94,11 @@ class resultCheck(object):
                     else:
                         self.missedEvents.append((time, type))
                         loadNewScriptLine = False
+
+                    if len(correctLines) == 0 and loadNewCorrectLine:
+                        loadNewScriptLine = True
+                    if len(scriptLines) == 0 and loadNewScriptLine:
+                        loadNewCorrectLine = True
 
                 if len(correctLines) > len(scriptLines):
                     print("Correct file have some events but script file doesn't")
@@ -123,6 +136,21 @@ class resultCheck(object):
               + " (Touch: " + str(len([x for x in self.addedEvents if x[1] == "TOUCH"])) 
               + ", Goal: " + str(len([x for x in self.addedEvents if x[1] == "GOAL"])) + ")")
 
+    def check_in_future(self, lines, time, type, id):
+        index = 0
+        while True:
+            if len(lines) > index:
+                (time2, type2, id2) = self.parseLine(lines[index])
+                deltaTime = abs(millis_interval(time, time2))
+                if deltaTime > TIME_TOLERANCE:
+                    break
+                if type == type2 and id == id2:
+                    return False
+            else:
+                break
+            index += 1
+
+        return True
     def parseLine(self, line):
         parts = line.split()
 
