@@ -248,3 +248,4 @@ ModelManifest.xml
 
 .idea/*
 /Samples/*_result.txt
+*.db
