@@ -33,7 +33,6 @@ class resultCheck(object):
         self.missedEvents = []
         self.addedEvents = []
         self.correctEvents = []
-        self.badEvents = []
         self.correctEventsCount = 0
         self.scriptEventsCount = 0
 
@@ -71,7 +70,6 @@ class resultCheck(object):
                                 loadNewScriptLine = False
                                 self.missedEvents.append((time, type))
 
-                            self.badEvents.append((time, type))
                             if id == id2:
                                 print("Missinterpreted event: " + type + " missed id (" + str(deltaTime) + ")")
                             elif type == type2:
@@ -116,7 +114,6 @@ class resultCheck(object):
         print("Correct events: " + str(correctEventCount) + " time differs: " + str(timeDiff) + " ms")
         print("Missed events: " + str(len(self.missedEvents)))
         print("Added events: " + str(len(self.addedEvents)))
-        print("Bad events: " + str(len(self.badEvents)))
 
     def parseLine(self, line):
         parts = line.split()
