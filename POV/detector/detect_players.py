@@ -230,7 +230,7 @@ class DetectPlayers:
             nextEval = np.inf
             nextIndex = None
             for x in L:
-                if x not in rows: #TODO fix better
+                if x < 0 or x >= maxIndex:
                     continue
 
                 if rows[x] < nextEval:
