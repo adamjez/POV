@@ -111,9 +111,17 @@ class resultCheck(object):
 
         print("Events count: " + str(self.correctEventsCount) + " (correct) " + str(
             self.scriptEventsCount) + " (script result)")
-        print("Correct events: " + str(correctEventCount) + " time differs: " + str(timeDiff) + " ms")
-        print("Missed events: " + str(len(self.missedEvents)))
-        print("Added events: " + str(len(self.addedEvents)))
+        print("Correct events: " + str(correctEventCount) + " time differs: " + str(timeDiff) + " ms" +  
+              " (Touch: " + str(len([x for x in self.correctEvents if x[0] == "TOUCH"])) + 
+              ", Goal: " + str(len([x for x in self.correctEvents if x[0] == "GOAL"])) + ")")
+
+        print("Missed events: " + str(len(self.missedEvents)) 
+              + " (Touch: " + str(len([x for x in self.missedEvents if x[1] == "TOUCH"])) 
+              + ", Goal: " + str(len([x for x in self.missedEvents if x[1] == "GOAL"])) + ")")
+
+        print("Added events: " + str(len(self.addedEvents)) 
+              + " (Touch: " + str(len([x for x in self.addedEvents if x[1] == "TOUCH"])) 
+              + ", Goal: " + str(len([x for x in self.addedEvents if x[1] == "GOAL"])) + ")")
 
     def parseLine(self, line):
         parts = line.split()
