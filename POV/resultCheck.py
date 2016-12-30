@@ -35,6 +35,10 @@ class resultCheck(object):
         self.correctEvents = []
         self.correctEventsCount = 0
         self.scriptEventsCount = 0
+        self.annotatedEvents = {
+            'TOUCH': 0,
+            'GOAL': 0
+        }
 
     def run(self):
         try:
@@ -45,6 +49,7 @@ class resultCheck(object):
 
                     loadNewCorrectLine = True
                     loadNewScriptLine = True
+
                 self.correctEventsCount = len(correctLines)
                 self.scriptEventsCount = len(scriptLines)
                 while len(correctLines) > 0 or len(scriptLines) > 0:
@@ -52,6 +57,7 @@ class resultCheck(object):
                         (time2, type2, id2) = self.parseLine(scriptLines.pop(0))
                     if loadNewCorrectLine and len(correctLines) > 0:
                         (time, type, id) = self.parseLine(correctLines.pop(0))
+                        self.annotatedEvents[type] += 1
 
                     loadNewCorrectLine = True
                     loadNewScriptLine = True
@@ -74,7 +80,7 @@ class resultCheck(object):
 
                             if loadNewScriptLine:
                                 self.addedEvents.append((time2, type2))
-                                
+
                             if loadNewCorrectLine:
                                 self.missedEvents.append((time, type))
 
@@ -122,18 +128,20 @@ class resultCheck(object):
         if correctEventCount != 0:
             timeDiff = sum([x[1] for x in self.correctEvents]) / correctEventCount
 
-        print("Events count: " + str(self.correctEventsCount) + " (correct) " + str(
-            self.scriptEventsCount) + " (script result)")
-        print("Correct events: " + str(correctEventCount) + " time differs: " + str(timeDiff) + " ms" +  
-              " (Touch: " + str(len([x for x in self.correctEvents if x[0] == "TOUCH"])) + 
+        print("Events count:", str(self.correctEventsCount), "(annotated)",
+              str(self.scriptEventsCount), "(script result)",
+              "(Touch:", self.annotatedEvents['TOUCH'], ',',
+              "Goal:", self.annotatedEvents['GOAL'], ")")
+        print("Correct events: " + str(correctEventCount) + " time differs: " + str(timeDiff) + " ms" +
+              " (Touch: " + str(len([x for x in self.correctEvents if x[0] == "TOUCH"])) +
               ", Goal: " + str(len([x for x in self.correctEvents if x[0] == "GOAL"])) + ")")
 
-        print("Missed events: " + str(len(self.missedEvents)) 
-              + " (Touch: " + str(len([x for x in self.missedEvents if x[1] == "TOUCH"])) 
+        print("Missed events: " + str(len(self.missedEvents))
+              + " (Touch: " + str(len([x for x in self.missedEvents if x[1] == "TOUCH"]))
               + ", Goal: " + str(len([x for x in self.missedEvents if x[1] == "GOAL"])) + ")")
 
-        print("Added events: " + str(len(self.addedEvents)) 
-              + " (Touch: " + str(len([x for x in self.addedEvents if x[1] == "TOUCH"])) 
+        print("Added events: " + str(len(self.addedEvents))
+              + " (Touch: " + str(len([x for x in self.addedEvents if x[1] == "TOUCH"]))
               + ", Goal: " + str(len([x for x in self.addedEvents if x[1] == "GOAL"])) + ")")
 
     def check_in_future(self, lines, time, type, id):
@@ -151,6 +159,7 @@ class resultCheck(object):
             index += 1
 
         return True
+
     def parseLine(self, line):
         parts = line.split()
 
