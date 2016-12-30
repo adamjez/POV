@@ -33,10 +33,10 @@ Added events: 35 (Touch: 34, Goal: 1)
 -----------
 game_04
 -----------
-Events count: 66 (annotated) 54 (script result) (Touch: 63 , Goal: 3 )
-Correct events: 42 time differs: 167.0 ms (Touch: 40, Goal: 2)
-Missed events: 23 (Touch: 23, Goal: 0)
-Added events: 13 (Touch: 12, Goal: 1)
+Events count: 65 (annotated) 54 (script result) (Touch: 62 , Goal: 3 )
+Correct events: 43 time differs: 163.41860465116278 ms (Touch: 41, Goal: 2)
+Missed events: 21 (Touch: 21, Goal: 0)
+Added events: 12 (Touch: 11, Goal: 1)
 
 -----------
 game_05
@@ -45,3 +45,6 @@ Events count: 76 (annotated) 71 (script result) (Touch: 70 , Goal: 6 )
 Correct events: 47 time differs: 310.1063829787234 ms (Touch: 41, Goal: 6)
 Missed events: 29 (Touch: 29, Goal: 0)
 Added events: 24 (Touch: 24, Goal: 0)
+
+
+
