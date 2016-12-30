@@ -1,0 +1,47 @@
+-----------
+game_00
+-----------
+Events count: 48 (annotated) 49 (script result) (Touch: 44 , Goal: 4 )
+Correct events: 41 time differs: 351.8048780487805 ms (Touch: 37, Goal: 4)
+Missed events: 7 (Touch: 7, Goal: 0)
+Added events: 8 (Touch: 8, Goal: 0)
+
+-----------
+game_01
+-----------
+Events count: 92 (annotated) 81 (script result) (Touch: 86 , Goal: 6 )
+Correct events: 59 time differs: 383.33898305084745 ms (Touch: 53, Goal: 6)
+Missed events: 33 (Touch: 33, Goal: 0)
+Added events: 22 (Touch: 22, Goal: 0)
+
+-----------
+game_02
+-----------
+Events count: 66 (annotated) 65 (script result) (Touch: 62 , Goal: 4 )
+Correct events: 49 time differs: 319.7142857142857 ms (Touch: 45, Goal: 4)
+Missed events: 17 (Touch: 17, Goal: 0)
+Added events: 16 (Touch: 16, Goal: 0)
+
+-----------
+game_03
+-----------
+Events count: 70 (annotated) 87 (script result) (Touch: 65 , Goal: 5 )
+Correct events: 52 time differs: 257.5769230769231 ms (Touch: 47, Goal: 5)
+Missed events: 18 (Touch: 18, Goal: 0)
+Added events: 35 (Touch: 34, Goal: 1)
+
+-----------
+game_04
+-----------
+Events count: 66 (annotated) 54 (script result) (Touch: 63 , Goal: 3 )
+Correct events: 42 time differs: 167.0 ms (Touch: 40, Goal: 2)
+Missed events: 23 (Touch: 23, Goal: 0)
+Added events: 13 (Touch: 12, Goal: 1)
+
+-----------
+game_05
+-----------
+Events count: 76 (annotated) 71 (script result) (Touch: 70 , Goal: 6 )
+Correct events: 47 time differs: 310.1063829787234 ms (Touch: 41, Goal: 6)
+Missed events: 29 (Touch: 29, Goal: 0)
+Added events: 24 (Touch: 24, Goal: 0)
